@@ -84,104 +84,116 @@ def seed_database(db: Session):
                 existing.email = p.email
     db.commit()
 
-    # Check if database cases are already seeded
-    if db.query(MissingPersonCase).count() > 0:
+    # Clean up legacy non-Bhilai demonstration cases if present
+    legacy_case = db.query(MissingPersonCase).filter(MissingPersonCase.missing_person_name == "Maya Lin").first()
+    if legacy_case:
+        # Clear legacy synthetic demo records
+        db.query(AIMatchCandidate).delete()
+        db.query(VolunteerAssignment).delete()
+        db.query(SearchTask).delete()
+        db.query(EvidenceRecord).delete()
+        db.query(Sighting).delete()
+        db.query(AuditEvent).delete()
+        db.query(MissingPersonCase).delete()
+        db.commit()
+
+    # Check if database cases are already seeded with Bhilai cases
+    if db.query(MissingPersonCase).filter(MissingPersonCase.missing_person_name == "P Yash Kumar").count() > 0:
         return
 
     now = datetime.now(timezone.utc)
-    db.commit()
 
-    # 2. Missing Person Cases (Realistic Synthetic Demonstration Cases)
+    # 2. Missing Person Cases (Bhilai, Chhattisgarh Regional Grid)
     case_1 = MissingPersonCase(
-        case_number="FG-2026-0811",
-        title="Disappearance near Riverside Botanical Gardens",
-        missing_person_name="Maya Lin",
-        age=22,
-        gender="Female",
-        description="University student studying environmental biology. Disappeared after conducting soil sampling field research near north riverbanks. Height 5'5\", medium athletic build, dark shoulder-length hair, black-rimmed spectacles.",
-        clothing_description="Olive green waterproof windbreaker jacket, black athletic leggings, white canvas sneakers, olive canvas backpack with yellow botanical pin.",
-        identifying_features="Small scar near left eyebrow, wears round black spectacles, silver lotus ring on right hand.",
+        case_number="FG-2026-0901",
+        title="Disappearance near Civic Centre Sector 6, Bhilai",
+        missing_person_name="P Yash Kumar",
+        age=21,
+        gender="Male",
+        description="Engineering student at Bhilai Institute. Last seen leaving study session near Kala Mandir, Civic Centre. Height 5'9\", athletic build, dark hair, wearing black spectacles.",
+        clothing_description="Navy blue hoodie with dark sleeves, black denim jeans, white sneakers, carrying a black laptop backpack.",
+        identifying_features="Small birthmark on right wrist, wears stainless steel watch, black-rimmed glasses.",
         last_seen_time=now - timedelta(hours=14),
-        last_seen_location_name="Riverside Botanical Gardens North Gate",
-        last_seen_lat=37.7749,
-        last_seen_lng=-122.4194,
+        last_seen_location_name="Civic Centre, Sector 6, Bhilai",
+        last_seen_lat=21.1950,
+        last_seen_lng=81.3560,
         status="Active Search",
         urgency="Critical",
-        reporter_name="David Lin",
-        reporter_contact="555-0192-384",
-        reporter_relationship="Father",
+        reporter_name="Sujal Das",
+        reporter_contact="+91 98271-44021",
+        reporter_relationship="Friend / Batchmate",
         assigned_investigator_wallet="0x70997970c51812dc3a010c7d01b50e0d17dc79c8".lower(),
         is_sensitive=False,
-        primary_image_url="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+        primary_image_url="https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=600&q=80",
     )
 
     case_2 = MissingPersonCase(
-        case_number="FG-2026-0812",
-        title="Silver Alert: Disorientation & Wandering",
-        missing_person_name="Robert 'Bobby' Hayes",
-        age=74,
+        case_number="FG-2026-0902",
+        title="Disappearance near Nehru Nagar Chowk, Bhilai",
+        missing_person_name="Aditya Lamte",
+        age=22,
         gender="Male",
-        description="Elderly male with early-stage cognitive disorientation. Walked past facility gate during morning grounds walk. Soft-spoken, responsive to his name. Height 5'10\", slim build, thinning silver-gray hair.",
-        clothing_description="Navy blue knit cardigan sweater, beige khaki slacks, brown leather orthopedic shoes, silver stainless steel watch.",
-        identifying_features="Noticeable slight limp on left leg, silver wedding band, wears medical alert bracelet.",
+        description="Young software developer. Did not return after an evening walk towards GE Road flyover. Height 5'11\", medium build, short black hair, clean-shaven.",
+        clothing_description="Maroon round-neck sweatshirt, beige cargo trousers, dark brown running shoes.",
+        identifying_features="Scar on left forearm from sports injury, wears a silver kada on right wrist.",
         last_seen_time=now - timedelta(hours=6),
-        last_seen_location_name="Pinecrest Senior Living Perimeter",
-        last_seen_lat=37.7833,
-        last_seen_lng=-122.4167,
+        last_seen_location_name="Nehru Nagar Chowk, GE Road, Bhilai",
+        last_seen_lat=21.2185,
+        last_seen_lng=81.3280,
         status="Under Review",
         urgency="High",
-        reporter_name="Clara Hayes",
-        reporter_contact="555-0144-889",
-        reporter_relationship="Spouse",
+        reporter_name="Ramesh Lamte",
+        reporter_contact="+91 94252-88190",
+        reporter_relationship="Father",
         assigned_investigator_wallet="0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc".lower(),
         is_sensitive=False,
-        primary_image_url="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
+        primary_image_url="https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80",
     )
 
     case_3 = MissingPersonCase(
-        case_number="FG-2026-0809",
-        title="Transit Route Anomaly - High School Student",
-        missing_person_name="Liam O'Connor",
-        age=15,
+        case_number="FG-2026-0903",
+        title="Reported Missing from Supela Market Corridor, Bhilai",
+        missing_person_name="Sankalp Dewangan",
+        age=20,
         gender="Male",
-        description="Did not arrive at home bus stop after high school robotics team meeting. Height 5'8\", lean build, curly light brown hair.",
-        clothing_description="Heather gray hooded sweatshirt with robotics team patch, dark blue denim jeans, red high-top canvas sneakers, carrying black nylon sports duffle bag.",
-        identifying_features="Dental braces with blue bands, freckles across nose bridge.",
+        description="Undergraduate student. Disappeared near Akash Ganga commercial complex after running evening errands. Height 5'8\", lean build, wavy black hair.",
+        clothing_description="Black collared casual shirt, olive green chinos, black sneakers, carrying blue canvas messenger bag.",
+        identifying_features="Distinctive mole on left cheek, wears black sports digital watch.",
         last_seen_time=now - timedelta(days=2),
-        last_seen_location_name="Metro Transit Central Station Sector B",
-        last_seen_lat=37.7892,
-        last_seen_lng=-122.4014,
+        last_seen_location_name="Supela Clock Tower / Akash Ganga, Bhilai",
+        last_seen_lat=21.2050,
+        last_seen_lng=81.3410,
         status="Potential Match",
-        urgency="Medium",
-        reporter_name="Sarah O'Connor",
-        reporter_contact="555-0129-472",
-        reporter_relationship="Mother",
+        urgency="High",
+        reporter_name="Tapan Dewangan",
+        reporter_contact="+91 98930-11234",
+        reporter_relationship="Brother",
         assigned_investigator_wallet="0x70997970c51812dc3a010c7d01b50e0d17dc79c8".lower(),
         is_sensitive=False,
-        primary_image_url="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80",
+        primary_image_url="https://images.unsplash.com/photo-1615813967515-e1838c1c5116?auto=format&fit=crop&w=600&q=80",
     )
 
     case_4 = MissingPersonCase(
-        case_number="FG-2026-0795",
-        title="Alpine Trailhead Separation - Group Recon",
-        missing_person_name="Sophia Rodriguez",
-        age=29,
-        gender="Female",
-        description="Separated from hiking companions due to sudden high-altitude fog. Successfully recovered safe and uninjured by volunteer ground unit.",
-        clothing_description="Red mountaineering shell jacket, charcoal hiking pants, trail boots.",
-        identifying_features="Tattoo of compass rose on right forearm.",
-        last_seen_time=now - timedelta(days=5),
-        last_seen_location_name="Twin Peaks Ridge Trail Marker 4",
-        last_seen_lat=37.7544,
-        last_seen_lng=-122.4477,
-        status="Resolved",
-        urgency="Low",
-        reporter_name="Trail Marshal Office",
-        reporter_contact="555-0199-311",
-        reporter_relationship="Law Enforcement Liaison",
+        case_number="FG-2026-0904",
+        title="Separation near Junwani Commercial Corridor, Bhilai",
+        missing_person_name="Ayush Lamte",
+        age=19,
+        gender="Male",
+        description="First-year student separated from friends after university fest event near Junwani. Height 5'10\", slim build, dark eyes, polite demeanor.",
+        clothing_description="Teal polo t-shirt, dark gray track pants, white sports shoes with orange accents.",
+        identifying_features="Small scar near hairline, carries red metallic water bottle.",
+        last_seen_time=now - timedelta(days=4),
+        last_seen_location_name="Junwani Commercial Square, Bhilai",
+        last_seen_lat=21.2330,
+        last_seen_lng=81.3120,
+        status="Submitted",
+        urgency="Medium",
+        reporter_name="Sunita Lamte",
+        reporter_contact="+91 97555-77312",
+        reporter_relationship="Mother",
         assigned_investigator_wallet="0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc".lower(),
         is_sensitive=False,
-        primary_image_url="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+        primary_image_url="https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?auto=format&fit=crop&w=600&q=80",
     )
 
     db.add(case_1)
@@ -190,55 +202,71 @@ def seed_database(db: Session):
     db.add(case_4)
     db.commit()
 
-    # 3. Sightings
+    # 3. Sightings (Bhilai Regional Landmarks)
     sighting_1 = Sighting(
         case_id=case_1.id,
         sighting_time=case_1.last_seen_time + timedelta(hours=2, minutes=15),
-        location_name="Bayside Ferry Pier Boardwalk Cafe",
-        latitude=37.7812,
-        longitude=-122.4101,
-        description="Young woman matching description observed asking counter clerk for bus directions to interstate terminal. Appeared fatigued, carried olive backpack with pin.",
-        clothing_observed="Olive green windbreaker jacket, black athletic leggings, white sneakers.",
+        location_name="Sector 9 Hospital Gate Road, Bhilai",
+        latitude=21.1890,
+        longitude=81.3620,
+        description="Young man matching P Yash Kumar description observed near Sector 9 gate tea stall. Looked fatigued, carried black backpack.",
+        clothing_observed="Navy blue hoodie, dark jeans, white sneakers.",
         reporter_wallet="0x90f79bf6eb2c4f870365e785982e1f101e93b906".lower(),
         reporter_name="Alex Martinez (Ground Volunteer)",
-        reporter_contact="555-0188-721",
+        reporter_contact="+91 98270-11223",
         status="Under Review",
-        investigator_notes="High correlation with Case FG-2026-0811. Pier security camera footage requested.",
+        investigator_notes="High spatial correlation with Case FG-2026-0901. Hospital gate CCTV requested.",
     )
 
     sighting_2 = Sighting(
         case_id=case_2.id,
         sighting_time=case_2.last_seen_time + timedelta(hours=1, minutes=30),
-        location_name="Maple Street Community Pharmacy Bench",
-        latitude=37.7850,
-        longitude=-122.4205,
-        description="Elderly gentleman resting on wooden bench outside storefront. Looked slightly confused when asked if he needed assistance, holding a silver watch in left hand.",
-        clothing_observed="Navy blue knit sweater, beige khaki pants, brown shoes.",
+        location_name="Surya Treasure Island Mall Entrance, Bhilai",
+        latitude=21.2220,
+        longitude=81.3250,
+        description="Young man in maroon sweatshirt observed walking towards auto stand outside Surya Mall.",
+        clothing_observed="Maroon sweatshirt, beige cargo pants, brown shoes.",
         reporter_wallet="0x15d34aaf54267db7d7c367839aaf71a00a2c6a65".lower(),
         reporter_name="Priya Sharma (Volunteer)",
-        reporter_contact="555-0177-332",
+        reporter_contact="+91 94241-99881",
         status="Verified",
-        investigator_notes="Confirmed visual match by facility staff. Ground search dispatched to secure area.",
+        investigator_notes="Confirmed visual match by traffic warden. Search team deployed.",
     )
 
     sighting_3 = Sighting(
         case_id=case_3.id,
         sighting_time=case_3.last_seen_time + timedelta(hours=3),
-        location_name="Market Street Public Skate Plaza",
-        latitude=37.7795,
-        longitude=-122.4180,
-        description="Youth seen conversing with group of skateboarders near public plaza transit kiosk. Had dark bag and distinctive red footwear.",
-        clothing_observed="Gray hoodie, blue jeans, bright red sneakers.",
+        location_name="Power House Railway Station Terminal, Bhilai",
+        latitude=21.2010,
+        longitude=81.3680,
+        description="Youth seen conversing with passengers near platform ticket counter. Had messenger bag and black casual shirt.",
+        clothing_observed="Black collared shirt, olive chinos, sneakers.",
         reporter_wallet=None,
         reporter_name="Anonymous Citizen",
-        reporter_contact="555-0100-291",
+        reporter_contact="+91 98110-23456",
         status="Submitted",
         investigator_notes="Potential match identified by AI engine. Under initial investigator triage.",
+    )
+
+    sighting_4 = Sighting(
+        case_id=case_4.id,
+        sighting_time=case_4.last_seen_time + timedelta(hours=4),
+        location_name="BIT Durg Campus North Gate, Junwani, Bhilai",
+        latitude=21.2370,
+        longitude=81.3100,
+        description="Student in teal polo shirt observed waiting near bus shelter carrying metallic water bottle.",
+        clothing_observed="Teal polo t-shirt, dark gray track pants.",
+        reporter_wallet="0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f".lower(),
+        reporter_name="Sujal Das",
+        reporter_contact="citizen@findgrid.org",
+        status="Under Review",
+        investigator_notes="Cross-verified with university security patrol.",
     )
 
     db.add(sighting_1)
     db.add(sighting_2)
     db.add(sighting_3)
+    db.add(sighting_4)
     db.commit()
 
     # 4. Evidence Records (with real SHA-256 hashes)
@@ -377,11 +405,11 @@ def seed_database(db: Session):
     # 6. Search Tasks & Volunteer Assignments
     task_1 = SearchTask(
         case_id=case_1.id,
-        title="Botanical Gardens Riverbank Grid Sweep",
-        description="Search along pedestrian trail between North Gate and pedestrian footbridge. Inspect riverbanks for abandoned items or personal effects.",
-        zone_name="Sector Alpha - River Corridor",
-        zone_center_lat=37.7755,
-        zone_center_lng=-122.4180,
+        title="Civic Centre to Kala Mandir Grid Sweep",
+        description="Search along pedestrian corridors between Civic Centre Park, Kala Mandir, and Sector 6 market. Inspect for abandoned items or personal effects.",
+        zone_name="Sector 6 - Civic Centre Perimeter",
+        zone_center_lat=21.1950,
+        zone_center_lng=81.3560,
         zone_radius_meters=600.0,
         priority="Urgent",
         status="In Progress",
@@ -389,26 +417,26 @@ def seed_database(db: Session):
     )
 
     task_2 = SearchTask(
-        case_id=case_1.id,
-        title="Bayside Pier Commercial CCTV Canvassing",
-        description="Interview business operators and collect private external camera recordings facing boardwalk between 19:00 and 22:00.",
-        zone_name="Sector Bravo - Pier Commercial",
-        zone_center_lat=37.7812,
-        zone_center_lng=-122.4101,
-        zone_radius_meters=450.0,
+        case_id=case_2.id,
+        title="Nehru Nagar to Surya Mall Canvassing",
+        description="Interview local business operators and collect private external camera recordings facing GE Road between 19:00 and 22:00.",
+        zone_name="Sector 2 - Nehru Nagar Corridor",
+        zone_center_lat=21.2185,
+        zone_center_lng=81.3280,
+        zone_radius_meters=500.0,
         priority="High",
         status="Assigned",
         created_by="0x70997970c51812dc3a010c7d01b50e0d17dc79c8".lower(),
     )
 
     task_3 = SearchTask(
-        case_id=case_2.id,
-        title="Pinecrest Perimeter Residential Canvass",
-        description="Knock on doors and check residential porches and gardens within 5-block radius of retirement community.",
-        zone_name="Sector Charlie - Pinecrest North",
-        zone_center_lat=37.7840,
-        zone_center_lng=-122.4175,
-        zone_radius_meters=500.0,
+        case_id=case_3.id,
+        title="Supela Market & Akash Ganga Canvass",
+        description="Check shops, transit auto stand, and commercial corridors around Supela Clock Tower.",
+        zone_name="Sector 3 - Akash Ganga Commercial",
+        zone_center_lat=21.2050,
+        zone_center_lng=81.3410,
+        zone_radius_meters=450.0,
         priority="High",
         status="Completed",
         created_by="0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc".lower(),

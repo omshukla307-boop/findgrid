@@ -38,8 +38,8 @@ export const MapSearchPage: React.FC = () => {
     title: '',
     description: '',
     zone_name: '',
-    zone_center_lat: 37.7749,
-    zone_center_lng: -122.4194,
+    zone_center_lat: 21.2050,
+    zone_center_lng: 81.3450,
     zone_radius_meters: 500,
     priority: 'High',
   });
@@ -76,9 +76,9 @@ export const MapSearchPage: React.FC = () => {
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
-      // Default to San Francisco coordinates matching seed data
+      // Default to Bhilai, Chhattisgarh coordinates matching incident grid
       const map = L.map(mapContainerRef.current, {
-        center: [37.7785, -122.4150],
+        center: [21.2050, 81.3450],
         zoom: 13,
         zoomControl: true,
       });

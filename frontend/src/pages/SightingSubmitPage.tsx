@@ -26,8 +26,8 @@ export const SightingSubmitPage: React.FC = () => {
   const [formData, setFormData] = useState({
     case_id: searchParams.get('case_id') || '',
     location_name: '',
-    latitude: 37.7812,
-    longitude: -122.4101,
+    latitude: 21.2050,
+    longitude: 81.3450,
     sighting_time: new Date().toISOString().substring(0, 16),
     description: '',
     clothing_observed: '',

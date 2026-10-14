@@ -37,14 +37,14 @@ export const CasesPage: React.FC = () => {
     identifying_features: '',
     last_seen_time: new Date().toISOString().substring(0, 16),
     last_seen_location_name: '',
-    last_seen_lat: 37.7749,
-    last_seen_lng: -122.4194,
+    last_seen_lat: 21.2050,
+    last_seen_lng: 81.3450,
     urgency: 'High' as CaseUrgency,
     reporter_name: '',
     reporter_contact: '',
     reporter_relationship: '',
     is_sensitive: false,
-    primary_image_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
+    primary_image_url: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=600&q=80',
   });
 
   const fetchCases = async () => {

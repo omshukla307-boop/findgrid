@@ -28,19 +28,19 @@ def test_list_cases(client):
     assert response.status_code == 200
     cases = response.json()
     assert len(cases) >= 3
-    assert any(c["case_number"] == "FG-2026-0811" for c in cases)
+    assert any(c["case_number"] == "FG-2026-0901" for c in cases)
 
 def test_sighting_submission_and_ai_trigger(client):
-    # Submit a sighting that resembles Maya Lin
+    # Submit a sighting that resembles P Yash Kumar
     sighting_payload = {
-        "location_name": "Bayside Pier Footpath",
-        "latitude": 37.7800,
-        "longitude": -122.4120,
+        "location_name": "Sector 9 Park Road",
+        "latitude": 21.1900,
+        "longitude": 81.3600,
         "sighting_time": "2026-10-14T02:00:00Z",
-        "description": "Student matching description in green jacket walking with backpack.",
-        "clothing_observed": "Olive green jacket, black athletic leggings.",
+        "description": "Student matching description in navy blue hoodie walking with backpack.",
+        "clothing_observed": "Navy blue hoodie with dark sleeves, black denim jeans.",
         "reporter_name": "Test Citizen Reporter",
-        "reporter_contact": "555-9988-112"
+        "reporter_contact": "+91 98270-11223"
     }
 
     response = client.post("/api/sightings", json=sighting_payload)
