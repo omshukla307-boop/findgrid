@@ -73,6 +73,16 @@ def seed_database(db: Session):
             password_hash=default_pw_hash,
             is_active=True
         ),
+        Profile(
+            wallet_address="0x4b7f8e12a67e456d98124d65f7fbc0abf5b21e8f".lower(),
+            full_name="Sujal Das",
+            email="sujal.das@findgrid.org",
+            organization="FindGrid Search & Emergency Rescue Network",
+            badge_number="CIT-IND-2026-88129",
+            role="volunteer",
+            password_hash=default_pw_hash,
+            is_active=True
+        ),
     ]
     for p in profiles:
         existing = db.query(Profile).filter(Profile.wallet_address == p.wallet_address).first()

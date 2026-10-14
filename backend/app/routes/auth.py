@@ -206,31 +206,37 @@ def login_citizen_verified(req: CitizenVerifiedLoginRequest, db: Session = Depen
     Emergency QR Code scanning and live camera biometric face matching.
     """
     norm_email = req.email.strip().lower()
-    profile = db.query(Profile).filter(Profile.email.ilike(norm_email)).first()
+    wallet_addr = (
+        req.wallet_address.lower() 
+        if req.wallet_address and req.wallet_address.startswith("0x") and len(req.wallet_address) == 42 
+        else "0x4b7f8e12a67e456d98124d65f7fbc0abf5b21e8f".lower()
+    )
+    profile = db.query(Profile).filter((Profile.email.ilike(norm_email)) | (Profile.wallet_address == wallet_addr)).first()
 
     if not profile:
-        wallet_addr = (
-            req.wallet_address.lower() 
-            if req.wallet_address and req.wallet_address.startswith("0x") and len(req.wallet_address) == 42 
-            else "0x4b7f8e12a67e456d98124d65f7fbc0abf5b21e8f".lower()
-        )
         profile = Profile(
             wallet_address=wallet_addr,
-            full_name=req.full_name.strip(),
+            full_name=req.full_name.strip() if req.full_name else "Sujal Das",
             email=norm_email,
             organization=req.organization.strip() if req.organization else "FindGrid Search & Emergency Rescue Network",
-            badge_number=req.citizen_id or "CIT-IND-88129",
+            badge_number=req.citizen_id or "CIT-IND-2026-88129",
             role="volunteer",
             password_hash=hash_password("Password123!"),
             is_active=True
         )
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
+        try:
+            db.add(profile)
+            db.commit()
+            db.refresh(profile)
+        except Exception:
+            db.rollback()
+            profile = db.query(Profile).filter((Profile.email.ilike(norm_email)) | (Profile.wallet_address == wallet_addr)).first()
     else:
+        profile.is_active = True
         if req.full_name and profile.full_name != req.full_name:
             profile.full_name = req.full_name.strip()
-            db.commit()
+        db.commit()
+        db.refresh(profile)
 
     access_token = create_access_token(
         data={"sub": profile.wallet_address, "role": profile.role, "profile_id": profile.id}
