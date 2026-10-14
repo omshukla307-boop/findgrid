@@ -19,22 +19,47 @@ function getAuthHeader(): Record<string, string> {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
+  let text = '';
+  try {
+    text = await res.text();
+  } catch {
+    throw new Error('Failed to read server response body stream.');
+  }
+
+  let data: any = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // not JSON format
+    }
+  }
+
   if (!res.ok) {
     let errorDetail = 'API request failed';
-    try {
-      const err = await res.json();
-      errorDetail = err.detail || err.message || JSON.stringify(err);
-    } catch {
-      const rawText = await res.text();
-      if (rawText.includes('ECONNREFUSED') || rawText.includes('proxy error') || rawText.includes('<!DOCTYPE') || rawText.includes('<html')) {
-        errorDetail = 'Backend API is currently offline. Please ensure the server is running on port 8000.';
+    if (data && (data.detail || data.message)) {
+      const d = data.detail || data.message;
+      errorDetail = typeof d === 'string' ? d : JSON.stringify(d);
+    } else if (text) {
+      if (
+        text.includes('ECONNREFUSED') ||
+        text.includes('proxy error') ||
+        text.includes('<!DOCTYPE') ||
+        text.includes('<html') ||
+        text.includes('500 Internal Server Error') ||
+        text.includes('504 Gateway')
+      ) {
+        errorDetail = 'Backend API is currently offline. Please ensure the FastAPI server is running on port 8000.';
       } else {
-        errorDetail = rawText;
+        errorDetail = text.length > 200 ? text.substring(0, 200) + '...' : text;
       }
+    } else {
+      errorDetail = `Server returned HTTP ${res.status} (${res.statusText})`;
     }
     throw new Error(errorDetail);
   }
-  return res.json();
+
+  return (data !== null ? data : ({} as T)) as T;
 }
 
 export const api = {
