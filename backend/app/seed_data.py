@@ -8,16 +8,10 @@ from app.models import (
 from app.ai_engine import AIMatchingEngine
 
 def seed_database(db: Session):
-    # Check if database is already seeded
-    if db.query(MissingPersonCase).count() > 0:
-        return
-
-    now = datetime.now(timezone.utc)
-
     from app.auth import hash_password
     default_pw_hash = hash_password("Password123!")
 
-    # 1. Profiles & Investigators
+    # 1. Profiles & Responders (Always ensure seeded)
     profiles = [
         Profile(
             wallet_address="0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266".lower(), # Hardhat Account #0
@@ -81,8 +75,20 @@ def seed_database(db: Session):
         ),
     ]
     for p in profiles:
-        if not db.query(Profile).filter(Profile.wallet_address == p.wallet_address).first():
+        existing = db.query(Profile).filter(Profile.wallet_address == p.wallet_address).first()
+        if not existing:
             db.add(p)
+        elif not existing.password_hash:
+            existing.password_hash = default_pw_hash
+            if not existing.email:
+                existing.email = p.email
+    db.commit()
+
+    # Check if database cases are already seeded
+    if db.query(MissingPersonCase).count() > 0:
+        return
+
+    now = datetime.now(timezone.utc)
     db.commit()
 
     # 2. Missing Person Cases (Realistic Synthetic Demonstration Cases)

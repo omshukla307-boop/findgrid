@@ -25,7 +25,12 @@ async function handleResponse<T>(res: Response): Promise<T> {
       const err = await res.json();
       errorDetail = err.detail || err.message || JSON.stringify(err);
     } catch {
-      errorDetail = await res.text();
+      const rawText = await res.text();
+      if (rawText.includes('ECONNREFUSED') || rawText.includes('proxy error') || rawText.includes('<!DOCTYPE') || rawText.includes('<html')) {
+        errorDetail = 'Backend API is currently offline. Please ensure the server is running on port 8000.';
+      } else {
+        errorDetail = rawText;
+      }
     }
     throw new Error(errorDetail);
   }
