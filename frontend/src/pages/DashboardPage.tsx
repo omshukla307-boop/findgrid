@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
   Shield, Radio, BrainCircuit, Blocks, Users, Eye, 
@@ -18,6 +17,7 @@ import { AnalyticsOverview, MissingPersonCase, Sighting } from '../types';
 import { formatAddress, formatHash } from '../services/crypto';
 import { StatusBadge } from '../components/StatusBadge';
 import { UrgencyBadge } from '../components/UrgencyBadge';
+import LiveMap from '../components/LiveMap';
 
 // Curated Bhilai, Chhattisgarh Active Missing Persons (Indian individuals)
 const DEFAULT_BHILAI_CASES: MissingPersonCase[] = [
@@ -132,9 +132,8 @@ export const DashboardPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [activeSector, setActiveSector] = useState<string>('all');
 
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const layersGroupRef = useRef<L.LayerGroup | null>(null);
+  const [alertCenter, setAlertCenter] = useState<[number, number]>([21.1950, 81.3560]);
+  const [alertRadius, setAlertRadius] = useState<number>(1200);
 
   const fetchTelemetryAndCases = async () => {
     try {
@@ -163,144 +162,11 @@ export const DashboardPage: React.FC = () => {
     fetchTelemetryAndCases();
   }, []);
 
-  // Initialize Leaflet Map centered on Bhilai, Chhattisgarh
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
-
-    if (!mapInstanceRef.current) {
-      // Bhilai Central Coordinates [Lat: 21.2050, Lng: 81.3450]
-      const map = L.map(mapContainerRef.current, {
-        center: [21.2050, 81.3450],
-        zoom: 13,
-        zoomControl: true,
-        scrollWheelZoom: false,
-      });
-
-      // CartoDB Dark Matter tiles (dark cyber tactical aesthetic)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19,
-      }).addTo(map);
-
-      layersGroupRef.current = L.layerGroup().addTo(map);
-      mapInstanceRef.current = map;
-    }
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, []);
-
-  // Render Bhilai Cases & Sightings onto Map
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    const layerGroup = layersGroupRef.current;
-    if (!map || !layerGroup) return;
-
-    layerGroup.clearLayers();
-
-    // 1. Plot Missing Person Cases in Bhilai
-    cases.forEach((c) => {
-      if (!c.last_seen_lat || !c.last_seen_lng) return;
-
-      const urgencyColor = 
-        c.urgency === 'Critical' ? '#f43f5e' : 
-        c.urgency === 'High' ? '#f59e0b' : '#06b6d4';
-
-      // Concentric Search Radius Circle around last seen point in Bhilai
-      L.circle([c.last_seen_lat, c.last_seen_lng], {
-        radius: 650,
-        color: urgencyColor,
-        fillColor: urgencyColor,
-        fillOpacity: 0.12,
-        weight: 1.5,
-        dashArray: '4, 6',
-      }).addTo(layerGroup);
-
-      // Custom HTML Marker with Photo Thumbnail Avatar & Pulsing Glow
-      const icon = L.divIcon({
-        className: 'custom-bhilai-marker',
-        html: `
-          <div style="position: relative; width: 42px; height: 42px; border-radius: 50%; border: 3px solid ${urgencyColor}; box-shadow: 0 0 16px ${urgencyColor}; overflow: hidden; background: #070b14; cursor: pointer; transition: transform 0.2s;">
-            <img src="${c.primary_image_url}" alt="${c.missing_person_name}" style="width: 100%; height: 100%; object-fit: cover;" />
-            <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #10b981; border: 1.5px solid #070b14; border-radius: 50%;"></span>
-          </div>
-        `,
-        iconSize: [42, 42],
-        iconAnchor: [21, 21],
-      });
-
-      const marker = L.marker([c.last_seen_lat, c.last_seen_lng], { icon });
-
-      marker.bindPopup(`
-        <div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: #f1f5f9; min-width: 220px; padding: 2px;">
-          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
-            <img src="${c.primary_image_url}" alt="${c.missing_person_name}" style="width: 46px; height: 46px; border-radius: 10px; object-fit: cover; border: 1px solid #1e293b;" />
-            <div>
-              <div style="font-weight: 800; font-size: 14px; color: #ffffff;">${c.missing_person_name}</div>
-              <div style="font-size: 11px; color: #22d3ee; font-family: monospace;">${c.case_number} • Age ${c.age}</div>
-              <div style="font-size: 10px; font-weight: bold; color: ${urgencyColor};">[${c.urgency.toUpperCase()}]</div>
-            </div>
-          </div>
-          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;">
-            <strong>Last Seen:</strong> ${c.last_seen_location_name}
-          </div>
-          <div style="font-size: 11px; color: #cbd5e1; margin-bottom: 10px; line-height: 1.3;">
-            ${c.description.substring(0, 85)}...
-          </div>
-          <div style="display: flex; gap: 6px;">
-            <a href="/sightings?case_id=${c.id}" style="flex: 1; text-align: center; padding: 6px 8px; background: #0891b2; color: #ffffff; border-radius: 8px; font-size: 11px; font-weight: bold; text-decoration: none;">
-              📍 Report Sighting
-            </a>
-            <a href="/cases/${c.id}" style="text-align: center; padding: 6px 8px; background: #1e293b; color: #cbd5e1; border-radius: 8px; font-size: 11px; font-weight: bold; text-decoration: none;">
-              Dossier
-            </a>
-          </div>
-        </div>
-      `);
-
-      layerGroup.addLayer(marker);
-    });
-
-    // 2. Plot Sightings
-    sightings.forEach((s) => {
-      if (!s.latitude || !s.longitude) return;
-
-      const sightingIcon = L.divIcon({
-        className: 'custom-sighting-marker',
-        html: `
-          <div style="background-color: #10b981; width: 18px; height: 18px; border-radius: 4px; border: 2px solid #070b14; transform: rotate(45deg); box-shadow: 0 0 10px #10b981; display: flex; align-items: center; justify-content: center;">
-          </div>
-        `,
-        iconSize: [18, 18],
-        iconAnchor: [9, 9],
-      });
-
-      const sMarker = L.marker([s.latitude, s.longitude], { icon: sightingIcon });
-      sMarker.bindPopup(`
-        <div style="font-family: system-ui, sans-serif; font-size: 12px; color: #f1f5f9; min-width: 180px;">
-          <div style="color: #10b981; font-weight: bold; font-size: 12px; margin-bottom: 2px;">
-            👁️ CROWDSOURCED SIGHTING
-          </div>
-          <div style="font-weight: bold; margin-bottom: 4px;">${s.location_name}</div>
-          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;">${s.description}</div>
-          <div style="font-size: 10px; color: #64748b; font-family: monospace;">Time: ${new Date(s.sighting_time).toLocaleString()}</div>
-        </div>
-      `);
-      layerGroup.addLayer(sMarker);
-    });
-  }, [cases, sightings]);
-
-  // Sector Fly-to Handler for Bhilai Map
-  const handleFlyToSector = (lat: number, lng: number, sectorId: string, zoom: number = 15) => {
+  // Sector Focus Handler for Bhilai Map
+  const handleFlyToSector = (lat: number, lng: number, sectorId: string, radius: number = 1000) => {
     setActiveSector(sectorId);
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([lat, lng], zoom, { duration: 1.2 });
-    }
+    setAlertCenter([lat, lng]);
+    setAlertRadius(radius);
   };
 
   // Format urgency chart data
@@ -633,30 +499,14 @@ export const DashboardPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Leaflet Map Canvas Container */}
-        <div className="relative rounded-xl overflow-hidden border border-navy-800 glow-border">
-          <div
-            ref={mapContainerRef}
-            className="w-full h-80 sm:h-96 z-10"
-            style={{ background: '#070b14' }}
+        {/* Integrated LiveMap Component */}
+        <div className="relative">
+          <LiveMap
+            cases={cases}
+            sightings={sightings}
+            alertCenter={alertCenter}
+            alertRadius={alertRadius}
           />
-
-          {/* Map Overlay Legend */}
-          <div className="absolute bottom-3 left-3 z-20 p-2.5 rounded-xl bg-navy-950/90 backdrop-blur-md border border-navy-800 text-[10px] font-mono space-y-1.5 shadow-xl">
-            <div className="font-bold text-slate-200 uppercase">Map Indicators</div>
-            <div className="flex items-center gap-2 text-rose-300">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500" />
-              <span>Critical Case Perimeter</span>
-            </div>
-            <div className="flex items-center gap-2 text-amber-300">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500" />
-              <span>High Urgency Case</span>
-            </div>
-            <div className="flex items-center gap-2 text-emerald-300">
-              <span className="w-2.5 h-2.5 rotate-45 bg-emerald-400 shadow-sm shadow-emerald-400" />
-              <span>Reported Sighting Pin</span>
-            </div>
-          </div>
         </div>
       </div>
 
