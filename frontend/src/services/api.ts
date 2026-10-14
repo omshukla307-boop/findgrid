@@ -4,7 +4,14 @@ import {
   AnalyticsOverview, EvidenceVerificationResult
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// Service binding support: BACKEND_URL injected by Vercel or environment override,
+// falling back to relative '/api' for production rewrites and Vite dev proxy.
+const API_BASE =
+  (typeof process !== 'undefined' && (process.env as Record<string, string | undefined>)?.BACKEND_URL
+    ? `${(process.env as Record<string, string | undefined>).BACKEND_URL}/api`
+    : null) ||
+  import.meta.env.VITE_API_BASE_URL ||
+  '/api';
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('findgrid_token');
