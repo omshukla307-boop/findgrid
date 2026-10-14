@@ -99,14 +99,16 @@ export const Navbar: React.FC = () => {
                 <div className="flex flex-col items-end">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span className="text-xs font-mono text-slate-200">
-                      {formatAddress(walletAddress || user?.wallet_address || '', 4)}
+                    <span className="text-xs font-mono font-semibold text-slate-200">
+                      {role === 'volunteer' ? 'Sujal Das' : (user?.full_name || formatAddress(walletAddress || user?.wallet_address || '', 4))}
                     </span>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-950 text-cyan-300 border border-cyan-500/40">
-                      {role}
+                      {role === 'volunteer' ? 'Sujal Das' : role}
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">{networkName}</span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {role === 'volunteer' ? `Active Volunteer • ${networkName}` : networkName}
+                  </span>
                 </div>
 
                 {/* Logout Button */}
@@ -183,7 +185,7 @@ export const Navbar: React.FC = () => {
                 <div className="flex items-center justify-between p-2 rounded bg-navy-900 border border-navy-800">
                   <div>
                     <div className="text-xs font-mono text-cyan-300">{formatAddress(walletAddress || '', 5)}</div>
-                    <div className="text-[10px] text-slate-400">Role: {role.toUpperCase()}</div>
+                    <div className="text-[10px] text-slate-400">Role: {role === 'volunteer' ? 'SUJAL DAS (VOLUNTEER)' : role.toUpperCase()}</div>
                   </div>
                   <button
                     onClick={() => { logout(); setMobileMenuOpen(false); }}

@@ -206,7 +206,7 @@ export const DashboardPage: React.FC = () => {
               OPERATIONAL <span className="text-cyan-400">COMMAND</span>
             </h1>
             <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-navy-850 text-cyan-300 border border-cyan-500/30">
-              {role.toUpperCase()} CLEARANCE
+              {role === 'volunteer' ? 'SUJAL DAS (VOLUNTEER CLEARANCE)' : `${role.toUpperCase()} CLEARANCE`}
             </span>
           </div>
           <p className="text-xs text-slate-400">
@@ -215,6 +215,13 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Active Volunteer Responder Tag in Top Right */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-navy-900 border border-cyan-500/40 shadow-sm text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-slate-400 text-[11px]">Volunteer:</span>
+            <span className="text-cyan-300 font-bold">Sujal Das</span>
+          </div>
+
           <button
             onClick={fetchTelemetryAndCases}
             disabled={refreshing}
