@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { 
   Shield, Radio, BrainCircuit, Blocks, Users, Eye, 
   AlertTriangle, CheckCircle2, ArrowRight, RefreshCw, 
-  TrendingUp, Clock, FileCheck2, PlusCircle, Activity
+  TrendingUp, Clock, FileCheck2, PlusCircle, Activity, MapPin
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
@@ -76,28 +76,81 @@ export const DashboardPage: React.FC = () => {
           <button
             onClick={fetchAnalytics}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-navy-900 hover:bg-navy-850 border border-navy-700 text-slate-300 transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-navy-900 hover:bg-navy-850 border border-navy-700 text-slate-300 transition-all disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-cyan-400' : ''}`} />
             Refresh Telemetry
           </button>
 
-          {(role === 'investigator' || role === 'admin') && (
-            <Link
-              to="/cases?action=create"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white shadow-md shadow-cyan-950 transition-all"
-            >
-              <PlusCircle className="w-3.5 h-3.5" /> Open New Case
-            </Link>
-          )}
+          <Link
+            to="/cases?action=create"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white shadow-md shadow-cyan-950 transition-all cursor-pointer"
+          >
+            <PlusCircle className="w-3.5 h-3.5" /> File Missing Complaint
+          </Link>
 
           <Link
             to="/sightings"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-navy-900 hover:bg-navy-850 border border-cyan-500/40 text-cyan-300 transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 text-emerald-300 transition-all cursor-pointer"
           >
-            <Eye className="w-3.5 h-3.5" /> Submit Sighting
+            <MapPin className="w-3.5 h-3.5 text-emerald-400" /> Report Last Location
           </Link>
         </div>
+      </div>
+
+      {/* Primary Citizen & Community Action Gateway */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        {/* Action 1: File a Missing Person Complaint */}
+        <Link
+          to="/cases?action=create"
+          className="p-5 rounded-2xl bg-gradient-to-br from-navy-900 via-navy-900 to-navy-950 border border-cyan-500/40 hover:border-cyan-400 shadow-xl transition-all group flex items-start justify-between cursor-pointer"
+        >
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono font-bold">
+              <Radio className="w-3 h-3 text-cyan-400 animate-pulse" />
+              CITIZEN INTAKE
+            </div>
+            <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">
+              File Missing Person Complaint
+            </h3>
+            <p className="text-xs text-slate-400 max-w-md leading-relaxed">
+              Report a missing family member, child, or acquaintance. Dispatches emergency broadcast to volunteer search grid and engages AI facial & spatiotemporal matching.
+            </p>
+            <div className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform pt-1">
+              <span>Open Complaint Form</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-110 transition-transform">
+            <PlusCircle className="w-6 h-6" />
+          </div>
+        </Link>
+
+        {/* Action 2: Report Sighting / Last Known Location */}
+        <Link
+          to="/sightings"
+          className="p-5 rounded-2xl bg-gradient-to-br from-navy-900 via-navy-900 to-navy-950 border border-emerald-500/40 hover:border-emerald-400 shadow-xl transition-all group flex items-start justify-between cursor-pointer"
+        >
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold">
+              <Eye className="w-3 h-3 text-emerald-400" />
+              SIGHTING & LAST LOCATION
+            </div>
+            <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
+              Report Sighting / Last Seen Location
+            </h3>
+            <p className="text-xs text-slate-400 max-w-md leading-relaxed">
+              Have you seen a missing individual? Submit the exact location, timestamp, and visual observations. Coordinates are instantly mapped and correlated by the AI engine.
+            </p>
+            <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 group-hover:translate-x-1 transition-transform pt-1">
+              <span>Submit Sighting & Location</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-110 transition-transform">
+            <MapPin className="w-6 h-6" />
+          </div>
+        </Link>
       </div>
 
       {/* Primary KPI Grid (8 metrics computed from DB records) */}

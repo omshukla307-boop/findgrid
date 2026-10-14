@@ -36,6 +36,17 @@ export const SightingSubmitPage: React.FC = () => {
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  // Auto-fill reporter details when user logs in
+  useEffect(() => {
+    if (user?.full_name && !formData.reporter_name) {
+      setFormData((prev) => ({
+        ...prev,
+        reporter_name: user.full_name,
+        reporter_contact: prev.reporter_contact || user.email || '',
+      }));
+    }
+  }, [user]);
+
   // Review modal
   const [selectedSighting, setSelectedSighting] = useState<Sighting | null>(null);
   const [reviewNotes, setReviewNotes] = useState<string>('');
@@ -162,10 +173,15 @@ export const SightingSubmitPage: React.FC = () => {
         <div className="max-w-3xl mx-auto">
           <div className="p-6 sm:p-8 rounded-2xl bg-navy-900 border border-navy-800 shadow-2xl glow-border">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-navy-850">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              <h2 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
-                FIELD SIGHTING REPORT
-              </h2>
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <div>
+                <h2 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
+                  REPORT SIGHTING / LAST SEEN LOCATION
+                </h2>
+                <p className="text-[11px] text-slate-400">
+                  Did you spot a missing person? Provide their last known location and timestamp to focus search operations.
+                </p>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -187,51 +203,86 @@ export const SightingSubmitPage: React.FC = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Location / Landmark *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Bayside Pier Boardwalk Cafe"
-                    value={formData.location_name}
-                    onChange={(e) => setFormData({ ...formData, location_name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  />
+              {/* Location & GPS Coordinate Capture */}
+              <div className="p-4 bg-navy-950/70 rounded-xl border border-navy-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-semibold text-slate-200">Last Seen Location & Coordinates</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                          (pos) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              latitude: parseFloat(pos.coords.latitude.toFixed(5)),
+                              longitude: parseFloat(pos.coords.longitude.toFixed(5)),
+                            }));
+                            showToast('Captured your current GPS coordinates!', 'info');
+                          },
+                          (err) => {
+                            showToast('GPS error: ' + err.message, 'error');
+                          }
+                        );
+                      } else {
+                        showToast('Geolocation is not supported by your browser.', 'error');
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 transition-colors cursor-pointer"
+                  >
+                    <MapPin className="w-3 h-3 text-emerald-400" /> Use My Current GPS Location
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Date & Time of Sighting *</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={formData.sighting_time}
-                    onChange={(e) => setFormData({ ...formData, sighting_time: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Location / Landmark *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Bayside Pier Boardwalk Cafe, Sector 4 Market"
+                      value={formData.location_name}
+                      onChange={(e) => setFormData({ ...formData, location_name: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Latitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={formData.latitude}
-                    onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white font-mono"
-                  />
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Date & Time of Sighting *</label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={formData.sighting_time}
+                      onChange={(e) => setFormData({ ...formData, sighting_time: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Longitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={formData.longitude}
-                    onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white font-mono"
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Latitude</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={formData.latitude}
+                      onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Longitude</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={formData.longitude}
+                      onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -286,10 +337,10 @@ export const SightingSubmitPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white shadow-md shadow-cyan-950 flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white shadow-md shadow-emerald-950 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  {submitting ? 'Submitting & Evaluating AI...' : 'Submit Sighting to Incident Command'}
+                  {submitting ? 'Submitting & Evaluating AI Correlation...' : 'Submit Sighting & Last Seen Location'}
                 </button>
               </div>
             </form>

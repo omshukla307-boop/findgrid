@@ -13,7 +13,7 @@ import { UrgencyBadge } from '../components/UrgencyBadge';
 import { formatAddress } from '../services/crypto';
 
 export const CasesPage: React.FC = () => {
-  const { role } = useAuth();
+  const { user, role } = useAuth();
   const { showToast } = useToast();
   const [searchParams] = useSearchParams();
 
@@ -67,12 +67,23 @@ export const CasesPage: React.FC = () => {
     fetchCases();
   }, [statusFilter, urgencyFilter]);
 
+  // Auto-populate reporter details if user is logged in
+  useEffect(() => {
+    if (user?.full_name && !formData.reporter_name) {
+      setFormData((prev) => ({
+        ...prev,
+        reporter_name: user.full_name,
+        reporter_contact: prev.reporter_contact || user.email || '',
+      }));
+    }
+  }, [user]);
+
   // Check URL query action=create
   useEffect(() => {
-    if (searchParams.get('action') === 'create' && (role === 'investigator' || role === 'admin')) {
+    if (searchParams.get('action') === 'create') {
       setCreateModalOpen(true);
     }
-  }, [searchParams, role]);
+  }, [searchParams]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,14 +128,12 @@ export const CasesPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {(role === 'investigator' || role === 'admin') && (
-            <button
-              onClick={() => setCreateModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white shadow-md shadow-cyan-950 transition-all"
-            >
-              <Plus className="w-4 h-4" /> Open New Case
-            </button>
-          )}
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white shadow-md shadow-cyan-950 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> File Missing Person Complaint
+          </button>
 
           {/* View Toggle */}
           <div className="flex items-center p-1 bg-navy-900 rounded-lg border border-navy-800">
@@ -329,7 +338,10 @@ export const CasesPage: React.FC = () => {
             <div className="flex items-center justify-between pb-4 border-b border-navy-800 mb-6">
               <div className="flex items-center gap-2">
                 <Radio className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-base font-bold text-white font-mono">INITIATE MISSING PERSON CASE</h2>
+                <div>
+                  <h2 className="text-base font-bold text-white font-mono">FILE MISSING PERSON COMPLAINT / REPORT</h2>
+                  <p className="text-[11px] text-slate-400">Citizen intake file with rapid dispatch to search grid.</p>
+                </div>
               </div>
               <button
                 onClick={() => setCreateModalOpen(false)}
@@ -453,37 +465,108 @@ export const CasesPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-1">
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Location Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Botanical Gardens Gate"
-                    value={formData.last_seen_location_name}
-                    onChange={(e) => setFormData({ ...formData, last_seen_location_name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  />
+              {/* Reporter Contact Information (For Citizen filing) */}
+              <div className="p-3.5 bg-navy-950/70 rounded-xl border border-navy-800 space-y-3">
+                <div className="text-xs font-semibold text-cyan-300">
+                  Citizen / Complainant Contact Information
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Latitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={formData.last_seen_lat}
-                    onChange={(e) => setFormData({ ...formData, last_seen_lat: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white font-mono"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Your Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Sujal Das"
+                      value={formData.reporter_name}
+                      onChange={(e) => setFormData({ ...formData, reporter_name: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Contact Phone / Email</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. +1 555-0199 or email"
+                      value={formData.reporter_contact}
+                      onChange={(e) => setFormData({ ...formData, reporter_contact: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Relationship to Person</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Parent, Sibling, Friend"
+                      value={formData.reporter_relationship}
+                      onChange={(e) => setFormData({ ...formData, reporter_relationship: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Longitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={formData.last_seen_lng}
-                    onChange={(e) => setFormData({ ...formData, last_seen_lng: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white font-mono"
-                  />
+              </div>
+
+              {/* Last Seen Location with GPS helper */}
+              <div className="p-3.5 bg-navy-950/70 rounded-xl border border-navy-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-300">Last Seen Location & Coordinates</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                          (pos) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              last_seen_lat: parseFloat(pos.coords.latitude.toFixed(5)),
+                              last_seen_lng: parseFloat(pos.coords.longitude.toFixed(5)),
+                            }));
+                            showToast('Captured your current GPS coordinates!', 'info');
+                          },
+                          (err) => {
+                            showToast('GPS error: ' + err.message, 'error');
+                          }
+                        );
+                      } else {
+                        showToast('Geolocation is not supported by your browser.', 'error');
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/40 transition-colors cursor-pointer"
+                  >
+                    <MapPin className="w-3 h-3 text-cyan-400" /> Use My Current GPS Location
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Location Name / Landmark *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Botanical Gardens Gate"
+                      value={formData.last_seen_location_name}
+                      onChange={(e) => setFormData({ ...formData, last_seen_location_name: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Latitude</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={formData.last_seen_lat}
+                      onChange={(e) => setFormData({ ...formData, last_seen_lat: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Longitude</label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={formData.last_seen_lng}
+                      onChange={(e) => setFormData({ ...formData, last_seen_lng: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 rounded-xl bg-navy-900 border border-navy-800 text-xs text-white font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -511,9 +594,9 @@ export const CasesPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white disabled:opacity-50 cursor-pointer shadow-lg shadow-cyan-950"
                 >
-                  {submitting ? 'Creating Case Record...' : 'Submit Case Report'}
+                  {submitting ? 'Registering Complaint...' : 'Submit Missing Person Complaint'}
                 </button>
               </div>
             </form>

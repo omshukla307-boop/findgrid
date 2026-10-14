@@ -7,7 +7,7 @@ from sqlalchemy import or_
 from app.database import get_db
 from app.models import MissingPersonCase, Sighting, EvidenceRecord, SearchTask, AuditEvent, Profile
 from app.schemas import CaseCreate, CaseUpdate, CaseResponse
-from app.auth import get_current_user_optional, require_investigator_or_admin
+from app.auth import get_current_user, get_current_user_optional, require_investigator_or_admin
 
 router = APIRouter(prefix="/cases", tags=["Missing Person Cases"])
 
@@ -66,10 +66,14 @@ def list_cases(
 def create_case(
     case_in: CaseCreate,
     db: Session = Depends(get_db),
-    current_user: Profile = Depends(require_investigator_or_admin)
+    current_user: Profile = Depends(get_current_user)
 ):
-    """Create a new missing person case report (Investigators & Admins)."""
+    """Create a new missing person case complaint/report (Citizens, Volunteers, Investigators & Admins)."""
     case_num = case_in.case_number or generate_case_number(db)
+
+    # If submitted by citizen or volunteer, mark as Submitted; if investigator/admin, Under Review
+    initial_status = "Under Review" if current_user.role in ["investigator", "admin"] else "Submitted"
+    assigned_inv = current_user.wallet_address if current_user.role in ["investigator", "admin"] else None
 
     new_case = MissingPersonCase(
         case_number=case_num,
@@ -84,14 +88,14 @@ def create_case(
         last_seen_location_name=case_in.last_seen_location_name,
         last_seen_lat=case_in.last_seen_lat,
         last_seen_lng=case_in.last_seen_lng,
-        urgency=case_in.urgency,
-        reporter_name=case_in.reporter_name,
-        reporter_contact=case_in.reporter_contact,
-        reporter_relationship=case_in.reporter_relationship,
-        assigned_investigator_wallet=current_user.wallet_address,
+        urgency=case_in.urgency or "Medium",
+        reporter_name=case_in.reporter_name or current_user.full_name or "Verified Citizen",
+        reporter_contact=case_in.reporter_contact or current_user.email or "Contact on File",
+        reporter_relationship=case_in.reporter_relationship or "Family / Citizen Informant",
+        assigned_investigator_wallet=assigned_inv,
         is_sensitive=case_in.is_sensitive,
         primary_image_url=case_in.primary_image_url,
-        status="Under Review",
+        status=initial_status,
     )
     db.add(new_case)
     db.commit()
@@ -101,11 +105,12 @@ def create_case(
     audit = AuditEvent(
         case_id=new_case.id,
         actor_wallet=current_user.wallet_address,
-        action_type="CASE_CREATED",
+        action_type="CITIZEN_COMPLAINT_FILED" if current_user.role not in ["investigator", "admin"] else "CASE_CREATED",
         details={
             "case_number": new_case.case_number,
             "title": new_case.title,
             "urgency": new_case.urgency,
+            "reporter_name": new_case.reporter_name,
             "initial_status": new_case.status
         }
     )
