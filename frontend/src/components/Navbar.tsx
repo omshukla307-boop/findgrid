@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Shield, Radio, Users, MapPin, Eye, BrainCircuit,
-  FileCheck2, History, Settings, Menu, X, LogIn, LogOut,
+  FileCheck2, History, Settings, Menu, X, LogOut,
   Wallet, Info, Lock, QrCode, Camera
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -130,13 +130,6 @@ export const Navbar: React.FC = () => {
                   <Camera className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Citizen QR ID</span>
                 </button>
-                <Link
-                  to="/"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-900 hover:bg-navy-850 border border-navy-700 text-slate-200 hover:text-white transition-all"
-                >
-                  <LogIn className="w-3.5 h-3.5 text-cyan-400" />
-                  Sign In
-                </Link>
                 <button
                   onClick={connectAndSignWithMetaMask}
                   disabled={isConnecting}
@@ -215,14 +208,15 @@ export const Navbar: React.FC = () => {
                 <Camera className="w-4 h-4 text-cyan-400" />
                 Citizen QR & Face ID Scanner
               </button>
-              <Link
-                to="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg shadow-md transition-all"
+              <button
+                type="button"
+                onClick={() => { connectAndSignWithMetaMask(); setMobileMenuOpen(false); }}
+                disabled={isConnecting}
+                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white rounded-lg shadow-md transition-all cursor-pointer"
               >
                 <Wallet className="w-4 h-4" />
-                Sign In / Admin
-              </Link>
+                Admin (MetaMask)
+              </button>
               <Link
                 to="/about"
                 onClick={() => setMobileMenuOpen(false)}

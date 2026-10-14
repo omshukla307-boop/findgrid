@@ -39,6 +39,16 @@ class CitizenRegisterRequest(BaseModel):
     organization: Optional[str] = "Community Volunteer"
     role: Optional[str] = "volunteer" # volunteer, public
 
+class CitizenVerifiedLoginRequest(BaseModel):
+    full_name: str
+    email: EmailStr
+    citizen_id: Optional[str] = None
+    fathers_name: Optional[str] = None
+    gender: Optional[str] = None
+    phone: Optional[str] = None
+    organization: Optional[str] = "FindGrid Search & Emergency Rescue Network"
+    wallet_address: Optional[str] = None
+
 # --- Profile Schemas ---
 class ProfileBase(BaseModel):
     wallet_address: str

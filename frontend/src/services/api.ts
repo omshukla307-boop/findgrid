@@ -127,6 +127,30 @@ export const api = {
     }>(res);
   },
 
+  async loginCitizenVerified(data: {
+    full_name: string;
+    email: string;
+    citizen_id?: string;
+    fathers_name?: string;
+    gender?: string;
+    phone?: string;
+    organization?: string;
+    wallet_address?: string;
+  }) {
+    const res = await fetch(`${API_BASE}/auth/login-citizen-verified`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<{
+      access_token: string;
+      token_type: string;
+      role: string;
+      wallet_address: string;
+      profile: UserProfile;
+    }>(res);
+  },
+
   async registerCitizen(data: {
     full_name: string;
     email: string;

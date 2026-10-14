@@ -53,7 +53,7 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
   onClose,
   onVerified,
 }) => {
-  const { loginWithEmail } = useAuth();
+  const { authenticateVerifiedCitizen } = useAuth();
   const navigate = useNavigate();
 
   // Active step: 'qr' | 'face' | 'result'
@@ -274,15 +274,17 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
   // Authenticate citizen & redirect to dashboard
   const handleProceedToDashboard = async () => {
     try {
-      await loginWithEmail(scannedCitizen?.email || 'citizen@findgrid.org', 'Password123!');
+      const citizenData = scannedCitizen || SAMPLE_CITIZEN;
+      await authenticateVerifiedCitizen(citizenData);
       onClose();
-      if (onVerified && scannedCitizen) {
-        onVerified(scannedCitizen);
+      if (onVerified) {
+        onVerified(citizenData);
       }
-      navigate('/dashboard');
-    } catch {
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Proceed to dashboard error:', err);
       onClose();
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   };
 
