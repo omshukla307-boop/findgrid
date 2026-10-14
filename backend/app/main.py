@@ -78,6 +78,7 @@ def root():
         "api_v1": settings.API_V1_STR
     }
 
+@app.get("/health")
 @app.get("/api/health")
 def health_check():
     return {

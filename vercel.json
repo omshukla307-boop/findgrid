@@ -15,7 +15,7 @@
     },
     "backend": {
       "root": "backend",
-      "framework": "fastapi"
+      "entrypoint": "main:app"
     }
   },
   "rewrites": [
