@@ -147,7 +147,7 @@ def seed_database(db: Session):
         reporter_relationship="Father",
         assigned_investigator_wallet="0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc".lower(),
         is_sensitive=False,
-        primary_image_url="https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80",
+        primary_image_url="/images/aditya_lamte.jpg",
     )
 
     case_3 = MissingPersonCase(

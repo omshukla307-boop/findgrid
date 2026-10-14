@@ -67,7 +67,7 @@ const DEFAULT_BHILAI_CASES: MissingPersonCase[] = [
     reporter_relationship: 'Father',
     assigned_investigator_wallet: '0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc',
     is_sensitive: false,
-    primary_image_url: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80',
+    primary_image_url: '/images/aditya_lamte.jpg',
     created_at: new Date(Date.now() - 6 * 3600000).toISOString(),
     updated_at: new Date(Date.now() - 6 * 3600000).toISOString(),
   },
@@ -341,8 +341,12 @@ export const DashboardPage: React.FC = () => {
                   alt={c.missing_person_name}
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   onError={(e) => {
-                    // Fallback avatar in case of network issue
-                    (e.target as HTMLElement).style.display = 'none';
+                    const img = e.target as HTMLImageElement;
+                    if (img.src && !img.src.includes('wikimedia') && !img.src.includes('unsplash')) {
+                      img.src = 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Indian_male_portrait.jpg/960px-Indian_male_portrait.jpg';
+                    } else {
+                      img.style.display = 'none';
+                    }
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-transparent to-transparent opacity-80" />
