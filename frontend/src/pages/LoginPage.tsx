@@ -18,8 +18,8 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Auth method tab: 'citizen' (Email & Password) or 'metamask' (Web3 Cryptographic)
-  const [activeTab, setActiveTab] = useState<'citizen' | 'metamask'>('citizen');
+  // Auth method tab: 'citizen' (Community Email & Password) or 'admin' (Admin MetaMask Cryptographic)
+  const [activeTab, setActiveTab] = useState<'citizen' | 'admin'>('citizen');
   
   // Citizen Form state
   const [isRegisterMode, setIsRegisterMode] = useState<boolean>(false);
@@ -215,17 +215,17 @@ export const LoginPage: React.FC = () => {
                 <span>Community & Citizen</span>
               </button>
 
-              {/* Tab 2: Web3 MetaMask */}
+              {/* Tab 2: Admin Access */}
               <button
-                onClick={() => { setActiveTab('metamask'); setErrorMsg(null); }}
+                onClick={() => { setActiveTab('admin'); setErrorMsg(null); }}
                 className={`py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  activeTab === 'metamask'
+                  activeTab === 'admin'
                     ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-950/60'
                     : 'text-slate-400 hover:text-white hover:bg-navy-850'
                 }`}
               >
-                <Wallet className="w-4 h-4" />
-                <span>MetaMask Web3</span>
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span>Admin</span>
               </button>
 
             </div>
@@ -415,26 +415,26 @@ export const LoginPage: React.FC = () => {
               </div>
             )}
 
-            {/* TAB 2 CONTENT: Web3 MetaMask Cryptographic Sign In */}
-            {activeTab === 'metamask' && (
+            {/* TAB 2 CONTENT: Admin Cryptographic Sign In */}
+            {activeTab === 'admin' && (
               <div className="p-6 sm:p-8 rounded-2xl bg-navy-900 border border-navy-800 shadow-2xl glow-border">
                 
                 <div className="flex items-center justify-between pb-4 border-b border-navy-800 mb-6">
                   <div className="flex items-center gap-2">
-                    <Wallet className="w-5 h-5 text-cyan-400" />
-                    <span className="text-sm font-bold text-white">MetaMask Challenge Sign-In</span>
+                    <ShieldCheck className="w-5 h-5 text-cyan-400" />
+                    <span className="text-sm font-bold text-white">Admin Command Sign-In</span>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                    EIP-191 SIGNATURE
+                    METAMASK VERIFIED
                   </span>
                 </div>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-950/80 border border-navy-800 text-xs text-slate-300">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <Lock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-semibold text-white block mb-0.5">Cryptographic Nonce Challenge</span>
-                      Backend generates a single-use 256-bit challenge nonce with a 10-minute validity window to prevent replay attacks. Zero private key exposure.
+                      <span className="font-semibold text-white block mb-0.5">Admin Cryptographic Challenge</span>
+                      System administrators and lead investigators authenticate via MetaMask (EIP-191) cryptographic challenge with zero private key exposure.
                     </div>
                   </div>
 
@@ -473,7 +473,7 @@ export const LoginPage: React.FC = () => {
                   className="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white shadow-lg shadow-cyan-950 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   <KeyRound className="w-4 h-4" />
-                  {isConnecting ? 'Verifying Challenge Signature...' : 'Sign In with MetaMask'}
+                  {isConnecting ? 'Verifying Challenge Signature...' : 'Sign In as Admin (MetaMask)'}
                 </button>
               </div>
             )}
