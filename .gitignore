@@ -9,6 +9,9 @@ __pycache__/
 env/
 venv/
 ENV/
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Node
 node_modules/
