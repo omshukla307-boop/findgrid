@@ -25,8 +25,19 @@ class AuthTokenResponse(BaseModel):
     profile: Optional[Dict[str, Any]] = None
 
 class DemoLoginRequest(BaseModel):
-    role: str = Field("investigator", description="admin, investigator, volunteer")
+    role: str = Field("investigator", description="admin, investigator, volunteer, public")
     wallet_address: Optional[str] = None
+
+class EmailLoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=4)
+
+class CitizenRegisterRequest(BaseModel):
+    full_name: str = Field(..., min_length=2, max_length=150)
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+    organization: Optional[str] = "Community Volunteer"
+    role: Optional[str] = "volunteer" # volunteer, public
 
 # --- Profile Schemas ---
 class ProfileBase(BaseModel):

@@ -19,6 +19,7 @@ class Profile(Base):
     wallet_address = Column(String(42), unique=True, nullable=False, index=True)
     full_name = Column(String(150), nullable=True)
     email = Column(String(255), nullable=True)
+    password_hash = Column(String(255), nullable=True)
     organization = Column(String(150), nullable=True)
     badge_number = Column(String(50), nullable=True)
     role = Column(String(20), nullable=False, default="volunteer", index=True) # admin, investigator, volunteer, public

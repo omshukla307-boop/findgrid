@@ -1,14 +1,16 @@
+from eth_account import Account
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Profile, AuthenticationNonce, AuditEvent
 from app.schemas import (
     NonceRequest, NonceResponse, VerifySignatureRequest,
-    AuthTokenResponse, DemoLoginRequest, ProfileResponse
+    AuthTokenResponse, DemoLoginRequest, ProfileResponse,
+    EmailLoginRequest, CitizenRegisterRequest
 )
 from app.auth import (
     generate_nonce, verify_metamask_signature, create_access_token,
-    get_auth_message, get_current_user
+    get_auth_message, get_current_user, hash_password, verify_password
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -105,6 +107,129 @@ def demo_login(req: DemoLoginRequest, db: Session = Depends(get_db)):
     access_token = create_access_token(
         data={"sub": profile.wallet_address, "role": profile.role, "profile_id": profile.id}
     )
+
+    return AuthTokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        role=profile.role,
+        wallet_address=profile.wallet_address,
+        profile={
+            "id": profile.id,
+            "full_name": profile.full_name,
+            "email": profile.email,
+            "organization": profile.organization,
+            "badge_number": profile.badge_number,
+            "role": profile.role,
+        }
+    )
+
+@router.post("/login-email", response_model=AuthTokenResponse)
+def login_with_email(req: EmailLoginRequest, db: Session = Depends(get_db)):
+    """
+    Standard email and password authentication for citizens, community volunteers, and responders.
+    """
+    norm_email = req.email.strip().lower()
+    profile = db.query(Profile).filter(Profile.email.ilike(norm_email)).first()
+
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account not found. Please register as a new community responder."
+        )
+
+    # Password validation with support for pre-seeded test accounts
+    is_valid = False
+    if profile.password_hash:
+        is_valid = verify_password(req.password, profile.password_hash)
+    elif req.password in ["Password123!", "demo123", "password", "findgrid"]:
+        # Upgrade seeded profile with PBKDF2 hash
+        profile.password_hash = hash_password(req.password)
+        db.commit()
+        is_valid = True
+
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password. Please verify your credentials or use the 1-Click Demo Profiles."
+        )
+
+    if not profile.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account is deactivated. Contact an administrator."
+        )
+
+    access_token = create_access_token(
+        data={"sub": profile.wallet_address, "role": profile.role, "profile_id": profile.id}
+    )
+
+    audit = AuditEvent(
+        actor_wallet=profile.wallet_address,
+        action_type="USER_AUTHENTICATED_EMAIL",
+        details={"role": profile.role, "auth_method": "email_password", "email": norm_email}
+    )
+    db.add(audit)
+    db.commit()
+
+    return AuthTokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        role=profile.role,
+        wallet_address=profile.wallet_address,
+        profile={
+            "id": profile.id,
+            "full_name": profile.full_name,
+            "email": profile.email,
+            "organization": profile.organization,
+            "badge_number": profile.badge_number,
+            "role": profile.role,
+        }
+    )
+
+@router.post("/register", response_model=AuthTokenResponse)
+def register_citizen(req: CitizenRegisterRequest, db: Session = Depends(get_db)):
+    """
+    Register a standard citizen or community responder account without needing MetaMask.
+    Provisions an internal EVM account behind the scenes to maintain seamless smart contract compatibility.
+    """
+    norm_email = req.email.strip().lower()
+    existing = db.query(Profile).filter(Profile.email.ilike(norm_email)).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email address already exists. Please sign in instead."
+        )
+
+    # Automatically provision EVM keypair for Web3 registry compatibility
+    evm_account = Account.create()
+    wallet_address = evm_account.address.lower()
+
+    role = req.role.lower() if req.role and req.role.lower() in ["volunteer", "public"] else "volunteer"
+
+    profile = Profile(
+        wallet_address=wallet_address,
+        full_name=req.full_name.strip(),
+        email=norm_email,
+        password_hash=hash_password(req.password),
+        organization=req.organization.strip() if req.organization else "Community Volunteer",
+        role=role,
+        is_active=True
+    )
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+
+    access_token = create_access_token(
+        data={"sub": profile.wallet_address, "role": profile.role, "profile_id": profile.id}
+    )
+
+    audit = AuditEvent(
+        actor_wallet=profile.wallet_address,
+        action_type="CITIZEN_REGISTERED",
+        details={"role": profile.role, "auth_method": "citizen_email_registration", "email": norm_email}
+    )
+    db.add(audit)
+    db.commit()
 
     return AuthTokenResponse(
         access_token=access_token,

@@ -15,6 +15,8 @@ interface AuthContextType {
   isMetaMaskInstalled: boolean;
   connectAndSignWithMetaMask: () => Promise<void>;
   loginAsDemoRole: (role: 'admin' | 'investigator' | 'volunteer') => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  registerCitizen: (data: { full_name: string; email: string; password: string; organization?: string }) => Promise<void>;
   logout: () => void;
 }
 
@@ -174,6 +176,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [showToast]);
 
+  // Citizen & Community Email Authentication
+  const loginWithEmail = useCallback(async (email: string, password: string) => {
+    try {
+      setIsConnecting(true);
+      const authResult = await api.loginWithEmail(email, password);
+
+      localStorage.setItem('findgrid_token', authResult.access_token);
+      localStorage.setItem('findgrid_wallet', authResult.wallet_address);
+
+      setUser(authResult.profile);
+      setWalletAddress(authResult.wallet_address);
+      showToast(`Welcome back, ${authResult.profile.full_name || authResult.profile.email}!`, 'success');
+    } catch (err: any) {
+      console.error('Email sign in failed:', err);
+      showToast(err.message || 'Email sign in failed.', 'error');
+      throw err;
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [showToast]);
+
+  // Citizen & Community Registration
+  const registerCitizen = useCallback(async (data: { full_name: string; email: string; password: string; organization?: string }) => {
+    try {
+      setIsConnecting(true);
+      const authResult = await api.registerCitizen(data);
+
+      localStorage.setItem('findgrid_token', authResult.access_token);
+      localStorage.setItem('findgrid_wallet', authResult.wallet_address);
+
+      setUser(authResult.profile);
+      setWalletAddress(authResult.wallet_address);
+      showToast(`Account registered successfully! Welcome to FindGrid, ${authResult.profile.full_name}.`, 'success');
+    } catch (err: any) {
+      console.error('Citizen registration failed:', err);
+      showToast(err.message || 'Citizen registration failed.', 'error');
+      throw err;
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [showToast]);
+
   const logout = useCallback(() => {
     localStorage.removeItem('findgrid_token');
     localStorage.removeItem('findgrid_wallet');
@@ -197,6 +241,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isMetaMaskInstalled,
         connectAndSignWithMetaMask,
         loginAsDemoRole,
+        loginWithEmail,
+        registerCitizen,
         logout,
       }}
     >

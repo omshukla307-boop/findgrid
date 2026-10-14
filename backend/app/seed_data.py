@@ -14,6 +14,9 @@ def seed_database(db: Session):
 
     now = datetime.now(timezone.utc)
 
+    from app.auth import hash_password
+    default_pw_hash = hash_password("Password123!")
+
     # 1. Profiles & Investigators
     profiles = [
         Profile(
@@ -23,6 +26,7 @@ def seed_database(db: Session):
             organization="National Missing & Exploited Coordination Office",
             badge_number="ADM-8801",
             role="admin",
+            password_hash=default_pw_hash,
             is_active=True
         ),
         Profile(
@@ -32,6 +36,7 @@ def seed_database(db: Session):
             organization="Metropolitan Cyber & Missing Persons Division",
             badge_number="DET-4029",
             role="investigator",
+            password_hash=default_pw_hash,
             is_active=True
         ),
         Profile(
@@ -41,6 +46,7 @@ def seed_database(db: Session):
             organization="Federal Search & Rescue Rapid Deployment",
             badge_number="SAR-1104",
             role="investigator",
+            password_hash=default_pw_hash,
             is_active=True
         ),
         Profile(
@@ -50,6 +56,7 @@ def seed_database(db: Session):
             organization="Civil Air & Volunteer Ground Patrol",
             badge_number="VOL-052",
             role="volunteer",
+            password_hash=default_pw_hash,
             is_active=True
         ),
         Profile(
@@ -59,6 +66,17 @@ def seed_database(db: Session):
             organization="Community Search Volunteer Alliance",
             badge_number="VOL-089",
             role="volunteer",
+            password_hash=default_pw_hash,
+            is_active=True
+        ),
+        Profile(
+            wallet_address="0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f".lower(),
+            full_name="Sarah Jenkins",
+            email="citizen@findgrid.org",
+            organization="Neighborhood Community Responder",
+            badge_number="CIT-109",
+            role="volunteer",
+            password_hash=default_pw_hash,
             is_active=True
         ),
     ]

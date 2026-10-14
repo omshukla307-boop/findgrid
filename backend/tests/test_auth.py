@@ -45,3 +45,37 @@ def test_jwt_token_creation():
     token = create_access_token({"sub": "0x1234567890123456789012345678901234567890", "role": "investigator"})
     assert isinstance(token, str)
     assert len(token) > 20
+
+def test_citizen_registration_and_email_login():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    client = TestClient(app)
+
+    unique_email = "test.citizen.reg@example.com"
+    # Register new citizen
+    reg_res = client.post("/api/auth/register", json={
+        "full_name": "Test Citizen User",
+        "email": unique_email,
+        "password": "Password123!",
+        "organization": "Neighborhood Search Team"
+    })
+    assert reg_res.status_code in [200, 400]
+    if reg_res.status_code == 200:
+        data = reg_res.json()
+        assert "access_token" in data
+        assert data["profile"]["email"] == unique_email
+
+    # Login with email
+    login_res = client.post("/api/auth/login-email", json={
+        "email": unique_email,
+        "password": "Password123!"
+    })
+    assert login_res.status_code == 200
+    assert "access_token" in login_res.json()
+
+    # Invalid password test
+    bad_login = client.post("/api/auth/login-email", json={
+        "email": unique_email,
+        "password": "IncorrectPassword!"
+    })
+    assert bad_login.status_code == 401

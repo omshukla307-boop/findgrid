@@ -82,6 +82,42 @@ export const api = {
     }>(res);
   },
 
+  async loginWithEmail(email: string, password: string) {
+    const res = await fetch(`${API_BASE}/auth/login-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    return handleResponse<{
+      access_token: string;
+      token_type: string;
+      role: string;
+      wallet_address: string;
+      profile: UserProfile;
+    }>(res);
+  },
+
+  async registerCitizen(data: {
+    full_name: string;
+    email: string;
+    password: string;
+    organization?: string;
+    role?: string;
+  }) {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<{
+      access_token: string;
+      token_type: string;
+      role: string;
+      wallet_address: string;
+      profile: UserProfile;
+    }>(res);
+  },
+
   async getCurrentUser() {
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: { ...getAuthHeader() },

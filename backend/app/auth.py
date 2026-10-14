@@ -1,3 +1,4 @@
+import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List
@@ -12,6 +13,18 @@ from app.database import get_db
 from app.models import AuthenticationNonce, Profile
 
 security = HTTPBearer(auto_error=False)
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000)
+    return f"{salt}:{key.hex()}"
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if not hashed_password or ":" not in hashed_password:
+        return False
+    salt, key_hex = hashed_password.split(":", 1)
+    key = hashlib.pbkdf2_hmac("sha256", plain_password.encode("utf-8"), salt.encode("utf-8"), 100000)
+    return secrets.compare_digest(key.hex(), key_hex)
 
 def get_auth_message(nonce: str) -> str:
     return f"Sign this one-time challenge to authenticate securely with FindGrid:\nNonce: {nonce}"
@@ -181,4 +194,4 @@ class RoleChecker:
 
 require_investigator_or_admin = RoleChecker(["investigator", "admin"])
 require_admin = RoleChecker(["admin"])
-require_authenticated = RoleChecker(["volunteer", "investigator", "admin"])
+require_authenticated = RoleChecker(["public", "volunteer", "investigator", "admin"])
