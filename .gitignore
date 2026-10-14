@@ -29,6 +29,7 @@ typechain-types/
 dist/
 dist-ssr/
 *.local
+*.tsbuildinfo
 
 # Editor
 .vscode/

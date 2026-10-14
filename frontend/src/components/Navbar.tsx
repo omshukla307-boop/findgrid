@@ -3,10 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Shield, Radio, Users, MapPin, Eye, BrainCircuit,
   FileCheck2, History, Settings, Menu, X, LogIn, LogOut,
-  Wallet, Info, Lock
+  Wallet, Info, Lock, QrCode, Camera
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatAddress } from '../services/crypto';
+import { CitizenQRScannerModal } from './CitizenQRScannerModal';
 
 export const Navbar: React.FC = () => {
   const { 
@@ -15,6 +16,7 @@ export const Navbar: React.FC = () => {
   } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
 
   const navLinks = [
     { to: '/dashboard', label: 'Dashboard', icon: Shield },
@@ -118,6 +120,16 @@ export const Navbar: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsQRScannerOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 text-emerald-300 hover:text-emerald-200 transition-all cursor-pointer shadow-sm shadow-emerald-950/50"
+                  title="Scan Citizen QR Identity and Verify Face"
+                >
+                  <QrCode className="w-3.5 h-3.5 text-emerald-400" />
+                  <Camera className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Citizen QR ID</span>
+                </button>
                 <Link
                   to="/"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-900 hover:bg-navy-850 border border-navy-700 text-slate-200 hover:text-white transition-all"
@@ -131,7 +143,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white shadow-md shadow-cyan-950 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   <Wallet className="w-3.5 h-3.5" />
-                  {isConnecting ? 'Verifying...' : 'Connect MetaMask'}
+                  {isConnecting ? 'Verifying...' : 'Admin (MetaMask)'}
                 </button>
               </div>
             )}
@@ -192,15 +204,24 @@ export const Navbar: React.FC = () => {
           ) : (
             <div className="py-2 space-y-3">
               <div className="text-xs text-slate-400 font-mono text-center p-2 rounded bg-navy-900 border border-navy-800">
-                Sign in with MetaMask to access operational modules.
+                Sign in with MetaMask or scan Citizen Identity to enter FindGrid.
               </div>
+              <button
+                type="button"
+                onClick={() => { setIsQRScannerOpen(true); setMobileMenuOpen(false); }}
+                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-500/50 text-emerald-300 rounded-lg shadow-md transition-all cursor-pointer"
+              >
+                <QrCode className="w-4 h-4 text-emerald-400" />
+                <Camera className="w-4 h-4 text-cyan-400" />
+                Citizen QR & Face ID Scanner
+              </button>
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg shadow-md transition-all"
               >
                 <Wallet className="w-4 h-4" />
-                Sign In with MetaMask
+                Sign In / Admin
               </Link>
               <Link
                 to="/about"
@@ -214,6 +235,12 @@ export const Navbar: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Citizen QR Code Scanner & Biometric Face Verification Modal */}
+      <CitizenQRScannerModal
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+      />
     </header>
   );
 };

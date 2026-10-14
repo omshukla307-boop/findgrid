@@ -4,10 +4,12 @@ import {
   Wallet, ShieldCheck, UserCheck, AlertTriangle, 
   CheckCircle2, ArrowRight, Lock, KeyRound, Sparkles,
   Radio, Shield, BrainCircuit, FileCheck2, Info, Mail,
-  User, Building2, UserPlus, LogIn, HeartHandshake
+  User, Building2, UserPlus, LogIn, HeartHandshake,
+  QrCode, Camera
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatAddress } from '../services/crypto';
+import { CitizenQRScannerModal } from '../components/CitizenQRScannerModal';
 
 export const LoginPage: React.FC = () => {
   const { 
@@ -20,6 +22,9 @@ export const LoginPage: React.FC = () => {
 
   // Auth method tab: 'citizen' (Community Email & Password) or 'admin' (Admin MetaMask Cryptographic)
   const [activeTab, setActiveTab] = useState<'citizen' | 'admin'>('citizen');
+  
+  // Citizen QR & Face ID modal state
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState<boolean>(false);
   
   // Citizen Form state
   const [isRegisterMode, setIsRegisterMode] = useState<boolean>(false);
@@ -412,6 +417,33 @@ export const LoginPage: React.FC = () => {
                   </form>
                 )}
 
+                {/* QR Scanner & Face ID Biometric Gateway */}
+                <div className="mt-5 pt-4 border-t border-navy-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-mono text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                      <QrCode className="w-3.5 h-3.5 text-cyan-400" /> Optical & Biometric Verification
+                    </span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                      LIVE
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsQRScannerOpen(true)}
+                    className="w-full py-3 px-4 rounded-xl bg-navy-950 hover:bg-navy-850 border border-cyan-500/40 hover:border-cyan-400 text-cyan-200 text-xs font-bold flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-navy-950 cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-1 text-cyan-400 group-hover:scale-110 transition-transform">
+                      <QrCode className="w-4 h-4" />
+                      <Camera className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <span>Scan Citizen QR Code & Face Verification</span>
+                  </button>
+                  <p className="text-[10px] text-slate-400 text-center mt-1.5 font-mono">
+                    Scans emergency ID card QR, checks biometric face liveness & displays verified dossier.
+                  </p>
+                </div>
+
               </div>
             )}
 
@@ -551,6 +583,12 @@ export const LoginPage: React.FC = () => {
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
+
+        {/* Citizen QR Code Scanner & Biometric Face Verification Modal */}
+        <CitizenQRScannerModal
+          isOpen={isQRScannerOpen}
+          onClose={() => setIsQRScannerOpen(false)}
+        />
 
       </div>
     </div>

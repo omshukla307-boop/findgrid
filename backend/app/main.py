@@ -13,24 +13,27 @@ from app.routes import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables
-    Base.metadata.create_all(bind=engine)
-    
-    # Ensure backward-compatible columns exist
-    with engine.connect() as conn:
-        try:
-            from sqlalchemy import text
-            conn.execute(text("ALTER TABLE profiles ADD COLUMN password_hash VARCHAR(255)"))
-            conn.commit()
-        except Exception:
-            pass
-
-    # Pre-populate database with realistic synthetic demonstration records
-    db = SessionLocal()
     try:
-        seed_database(db)
-    finally:
-        db.close()
+        # Initialize database tables
+        Base.metadata.create_all(bind=engine)
+        
+        # Ensure backward-compatible columns exist
+        with engine.connect() as conn:
+            try:
+                from sqlalchemy import text
+                conn.execute(text("ALTER TABLE profiles ADD COLUMN password_hash VARCHAR(255)"))
+                conn.commit()
+            except Exception:
+                pass
+
+        # Pre-populate database with realistic synthetic demonstration records
+        db = SessionLocal()
+        try:
+            seed_database(db)
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"Database init warning: {e}")
     yield
 
 app = FastAPI(

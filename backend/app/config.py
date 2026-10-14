@@ -1,16 +1,20 @@
 import os
+import tempfile
 from dotenv import load_dotenv
 
 load_dotenv()
+
+IS_VERCEL = bool(os.getenv("VERCEL"))
 
 class Settings:
     PROJECT_NAME: str = "FindGrid — AI Missing Person Search & Coordination Platform"
     API_V1_STR: str = "/api"
     
-    # Database: Supabase PostgreSQL or local SQLite fallback
+    # Database: Supabase PostgreSQL or SQLite fallback
+    # On Vercel serverless, SQLite must be stored in the writable /tmp partition
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "sqlite:///./findgrid.db"
+        "sqlite:////tmp/findgrid.db" if IS_VERCEL else "sqlite:///./findgrid.db"
     )
     
     # Supabase credentials (optional when using direct DATABASE_URL or SQLite)
@@ -28,11 +32,18 @@ class Settings:
     BLOCKCHAIN_RPC_URL: str = os.getenv("BLOCKCHAIN_RPC_URL", "http://127.0.0.1:8545")
     EVIDENCE_REGISTRY_ADDRESS: str = os.getenv("EVIDENCE_REGISTRY_ADDRESS", "")
     
-    # Upload storage
-    UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+    # Upload storage (writable /tmp on Vercel)
+    UPLOAD_DIR: str = (
+        os.path.join(tempfile.gettempdir(), "findgrid_uploads") 
+        if IS_VERCEL 
+        else os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+    )
     MAX_FILE_SIZE_BYTES: int = 25 * 1024 * 1024 # 25 MB max evidence file
 
 settings = Settings()
 
-# Ensure uploads directory exists
-os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+# Ensure uploads directory exists safely without crashing on read-only filesystems
+try:
+    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+except (OSError, Exception):
+    pass
