@@ -384,7 +384,7 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
                   className="py-2.5 px-3 rounded-xl bg-cyan-950/80 hover:bg-cyan-900/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Load Citizen QR (Sujal Das)</span>
+                  <span>Load Sample Emergency QR</span>
                 </button>
               </div>
 
@@ -401,13 +401,13 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
               <div className="p-3 rounded-xl bg-cyan-950/50 border border-cyan-500/40 text-xs text-cyan-200 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-white text-sm">Citizen: {scannedCitizen?.fullName}</span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-cyan-900/80 text-cyan-300 border border-cyan-500/30">
-                      {scannedCitizen?.gender}
+                    <span className="font-bold text-white text-sm">QR Code Decoded Successfully</span>
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-amber-950/80 text-amber-300 border border-amber-500/30">
+                      Face Verification Required
                     </span>
                   </div>
                   <span className="text-[11px] text-slate-300 font-mono block mt-0.5">
-                    Father's Name: <span className="text-cyan-300 font-semibold">{scannedCitizen?.fathersName}</span> • ID: {scannedCitizen?.citizenId}
+                    Identity locked • Align face with biometric oval to verify physical presence
                   </span>
                 </div>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40">Step 2 / 2</span>
@@ -437,7 +437,7 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
                     LIVENESS MONITOR ACTIVE
                   </div>
                   <div>Mesh Points: 68 Aligned</div>
-                  <div>Citizen: {scannedCitizen?.fullName}</div>
+                  <div>Biometric Analysis: In Progress</div>
                   <div>Exposure / Anti-Spoof: OK</div>
                 </div>
               </div>

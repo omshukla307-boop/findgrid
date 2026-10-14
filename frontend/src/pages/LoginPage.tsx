@@ -3,9 +3,8 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   Wallet, ShieldCheck, UserCheck, AlertTriangle, 
   CheckCircle2, ArrowRight, Lock, KeyRound, Sparkles,
-  Radio, Shield, BrainCircuit, FileCheck2, Info, Mail,
-  User, Building2, UserPlus, LogIn, HeartHandshake,
-  QrCode, Camera
+  Radio, Shield, BrainCircuit, FileCheck2, Info,
+  HeartHandshake, QrCode, Camera
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatAddress } from '../services/crypto';
@@ -15,7 +14,7 @@ export const LoginPage: React.FC = () => {
   const { 
     user, walletAddress, chainId, networkName, isAuthenticated, 
     isConnecting, isMetaMaskInstalled, connectAndSignWithMetaMask, 
-    loginAsDemoRole, loginWithEmail, registerCitizen, logout 
+    loginAsDemoRole, logout 
   } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,12 +25,6 @@ export const LoginPage: React.FC = () => {
   // Citizen QR & Face ID modal state
   const [isQRScannerOpen, setIsQRScannerOpen] = useState<boolean>(false);
   
-  // Citizen Form state
-  const [isRegisterMode, setIsRegisterMode] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
-  const [organization, setOrganization] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const from = (location.state as any)?.from?.pathname || '/dashboard';
@@ -60,57 +53,6 @@ export const LoginPage: React.FC = () => {
       navigate(from, { replace: true });
     } catch (err: any) {
       setErrorMsg(err.message || 'Demo authentication failed.');
-    }
-  };
-
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setErrorMsg('Please enter both your email address and password.');
-      return;
-    }
-    try {
-      setErrorMsg(null);
-      await loginWithEmail(email, password);
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Invalid email or password.');
-    }
-  };
-
-  const handleCitizenRegistration = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!fullName || !email || !password) {
-      setErrorMsg('Please fill in your name, email, and a password (minimum 6 characters).');
-      return;
-    }
-    if (password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters long.');
-      return;
-    }
-    try {
-      setErrorMsg(null);
-      await registerCitizen({
-        full_name: fullName,
-        email,
-        password,
-        organization: organization || 'Community Volunteer',
-      });
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Registration failed. This email may already be in use.');
-    }
-  };
-
-  const handleQuickCitizenFill = async () => {
-    setEmail('citizen@findgrid.org');
-    setPassword('Password123!');
-    try {
-      setErrorMsg(null);
-      await loginWithEmail('citizen@findgrid.org', 'Password123!');
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Demo citizen login failed.');
     }
   };
 
@@ -235,214 +177,73 @@ export const LoginPage: React.FC = () => {
 
             </div>
 
-            {/* TAB 1 CONTENT: Normal People / Citizen / Email Sign In & Sign Up */}
+            {/* TAB 1 CONTENT: Normal People / Citizen - Mandatory QR & Face Verification Portal */}
             {activeTab === 'citizen' && (
               <div className="p-6 sm:p-8 rounded-2xl bg-navy-900 border border-navy-800 shadow-2xl glow-border">
                 
                 <div className="flex items-center justify-between pb-4 border-b border-navy-800 mb-6">
                   <div>
                     <h2 className="text-base font-bold text-white flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-cyan-400" />
-                      {isRegisterMode ? 'Register as Community Volunteer' : 'Community & Citizen Sign In'}
+                      <QrCode className="w-4 h-4 text-emerald-400" />
+                      Citizen & Volunteer Access Portal
                     </h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {isRegisterMode 
-                        ? 'Create a citizen responder account with standard email credentials.' 
-                        : 'Sign in with your email address to report sightings and join searches.'}
+                      Mandatory optical identity and live biometric face verification protocol.
                     </p>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30 whitespace-nowrap hidden sm:inline-block">
-                    NO CRYPTO REQUIRED
+                    BIOMETRIC GATED
                   </span>
                 </div>
 
-                {/* Sub-toggle: Sign In vs Create Account */}
-                <div className="flex items-center justify-center gap-2 mb-6 p-1 bg-navy-950 rounded-xl border border-navy-800 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => { setIsRegisterMode(false); setErrorMsg(null); }}
-                    className={`flex-1 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
-                      !isRegisterMode 
-                        ? 'bg-navy-800 text-cyan-300 shadow-sm' 
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    I already have an account
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsRegisterMode(true); setErrorMsg(null); }}
-                    className={`flex-1 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
-                      isRegisterMode 
-                        ? 'bg-navy-800 text-cyan-300 shadow-sm' 
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    New Citizen / Volunteer
-                  </button>
-                </div>
-
-                {/* Registration Form */}
-                {isRegisterMode ? (
-                  <form onSubmit={handleCitizenRegistration} className="space-y-4">
+                {/* Verification requirement warning banner */}
+                <div className="p-4 rounded-xl bg-navy-950 border border-cyan-500/30 mb-6 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
-                      <div className="relative">
-                        <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="text"
-                          required
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          placeholder="e.g. Sarah Jenkins"
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-950 border border-navy-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                      </div>
+                      <h4 className="text-xs font-bold text-white">Identity Verification Required for Entry</h4>
+                      <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                        To protect sensitive missing person investigations, all civilian responders and volunteers must authenticate via their Emergency QR Code and pass live camera biometric facial verification.
+                      </p>
                     </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="sarah.jenkins@example.com"
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-950 border border-navy-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
-                      <div className="relative">
-                        <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="password"
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Minimum 6 characters"
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-950 border border-navy-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">
-                        Community Group / Organization <span className="text-slate-500">(Optional)</span>
-                      </label>
-                      <div className="relative">
-                        <Building2 className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="text"
-                          value={organization}
-                          onChange={(e) => setOrganization(e.target.value)}
-                          placeholder="e.g. Neighborhood Volunteer Alliance"
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-950 border border-navy-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-navy-950 border border-navy-800 text-[11px] text-slate-400 flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>An EVM smart-contract address is automatically provisioned for your account behind the scenes.</span>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isConnecting}
-                      className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-950 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      {isConnecting ? 'Registering Account...' : 'Create Citizen Account'}
-                    </button>
-                  </form>
-                ) : (
-                  /* Standard Sign In Form */
-                  <form onSubmit={handleEmailSignIn} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="your.email@example.com"
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-950 border border-navy-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
-                      <div className="relative">
-                        <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="password"
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Enter your password"
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-950 border border-navy-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isConnecting}
-                      className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white shadow-lg shadow-cyan-950 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-                    >
-                      <LogIn className="w-4 h-4" />
-                      {isConnecting ? 'Authenticating...' : 'Sign In as Citizen / Volunteer'}
-                    </button>
-
-                    {/* Quick 1-Click Citizen Test Button */}
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        onClick={handleQuickCitizenFill}
-                        disabled={isConnecting}
-                        className="w-full py-2.5 px-3 rounded-xl bg-navy-950 hover:bg-navy-850 border border-cyan-500/30 text-cyan-300 text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                        <span>1-Click Test Citizen: citizen@findgrid.org</span>
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {/* QR Scanner & Face ID Biometric Gateway */}
-                <div className="mt-5 pt-4 border-t border-navy-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-mono text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                      <QrCode className="w-3.5 h-3.5 text-cyan-400" /> Optical & Biometric Verification
-                    </span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                      LIVE
-                    </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setIsQRScannerOpen(true)}
-                    className="w-full py-3 px-4 rounded-xl bg-navy-950 hover:bg-navy-850 border border-cyan-500/40 hover:border-cyan-400 text-cyan-200 text-xs font-bold flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-navy-950 cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-1 text-cyan-400 group-hover:scale-110 transition-transform">
-                      <QrCode className="w-4 h-4" />
-                      <Camera className="w-4 h-4 text-emerald-400" />
+                  {/* 3-Step Verification Pipeline */}
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-navy-900 text-[10px] font-mono text-center">
+                    <div className="p-2 rounded-lg bg-navy-900 border border-navy-800">
+                      <span className="text-cyan-400 block font-bold">STEP 1</span>
+                      <span className="text-slate-300">Scan QR Code</span>
                     </div>
-                    <span>Scan Citizen QR Code & Face Verification</span>
-                  </button>
-                  <p className="text-[10px] text-slate-400 text-center mt-1.5 font-mono">
-                    Scans emergency ID card QR, checks biometric face liveness & displays verified dossier.
-                  </p>
+                    <div className="p-2 rounded-lg bg-navy-900 border border-navy-800">
+                      <span className="text-emerald-400 block font-bold">STEP 2</span>
+                      <span className="text-slate-300">Live Face Camera</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-navy-900 border border-navy-800">
+                      <span className="text-purple-400 block font-bold">STEP 3</span>
+                      <span className="text-slate-300">Enter Platform</span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Primary Mandatory Entry Action */}
+                <button
+                  type="button"
+                  onClick={() => { setErrorMsg(null); setIsQRScannerOpen(true); }}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-cyan-600 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 text-white font-bold text-sm shadow-xl shadow-cyan-950/60 transition-all flex items-center justify-center gap-3 cursor-pointer group"
+                >
+                  <div className="flex items-center gap-1.5 text-white group-hover:scale-110 transition-transform">
+                    <QrCode className="w-5 h-5 text-emerald-300" />
+                    <Camera className="w-5 h-5 text-cyan-200" />
+                  </div>
+                  <span>Scan Citizen QR & Verify Face to Enter</span>
+                  <ArrowRight className="w-4 h-4 text-cyan-200 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <p className="text-[10px] text-slate-400 text-center mt-3 font-mono">
+                  Direct entry without emergency QR scan & physical camera verification is restricted.
+                </p>
 
               </div>
             )}
@@ -555,18 +356,18 @@ export const LoginPage: React.FC = () => {
               <span className="text-[10px] text-slate-500 font-mono block">elena.vance@...</span>
             </button>
 
-            {/* Demo Volunteer */}
+            {/* Demo Volunteer - Strictly gated through QR & Biometric verification */}
             <button
-              onClick={() => handleDemoMetaMaskAuth('volunteer')}
+              onClick={() => { setErrorMsg(null); setIsQRScannerOpen(true); }}
               disabled={isConnecting}
               className="p-3 rounded-xl bg-navy-950 hover:bg-navy-850 border border-navy-800 hover:border-emerald-500/40 text-left transition-all group cursor-pointer"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-bold text-white group-hover:text-emerald-300">Citizen / Vol.</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-950 text-emerald-400 rounded">Citizen</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-950 text-emerald-400 rounded">Biometric</span>
               </div>
-              <span className="text-[10px] text-slate-400 block truncate">Sujal Das</span>
-              <span className="text-[10px] text-slate-500 font-mono block">citizen@findgrid...</span>
+              <span className="text-[10px] text-slate-300 block truncate">Citizen Responder</span>
+              <span className="text-[10px] text-cyan-400 font-mono block">QR & Face Cam Required</span>
             </button>
 
           </div>
