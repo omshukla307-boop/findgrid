@@ -267,7 +267,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const roleNames = {
           admin: 'Dr. Elena Vance (Lead Admin)',
           investigator: 'Det. Marcus Reed (Incident Lead)',
-          volunteer: 'Sarah Jenkins (Citizen Volunteer)',
+          volunteer: 'Sujal Das',
         };
         const wallet = roleWallets[demoRole];
         const fallbackProfile: UserProfile = {
@@ -317,7 +317,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Backend unreachable for email login, falling back to local credentials:', apiErr);
         const norm = email.toLowerCase().trim();
         let role: UserRole = 'volunteer';
-        let fullName = 'Sarah Jenkins';
+        let fullName = 'Sujal Das';
         if (norm.includes('admin') || norm.includes('elena')) {
           role = 'admin';
           fullName = 'Dr. Elena Vance';

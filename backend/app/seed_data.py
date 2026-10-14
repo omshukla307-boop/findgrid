@@ -45,8 +45,8 @@ def seed_database(db: Session):
         ),
         Profile(
             wallet_address="0x90f79bf6eb2c4f870365e785982e1f101e93b906".lower(), # Hardhat Account #3
-            full_name="Alex Martinez",
-            email="alex.m@groundpatrol.org",
+            full_name="Sujal Das",
+            email="sujal.das@groundpatrol.org",
             organization="Civil Air & Volunteer Ground Patrol",
             badge_number="VOL-052",
             role="volunteer",
@@ -212,7 +212,7 @@ def seed_database(db: Session):
         description="Young man matching P Yash Kumar description observed near Sector 9 gate tea stall. Looked fatigued, carried black backpack.",
         clothing_observed="Navy blue hoodie, dark jeans, white sneakers.",
         reporter_wallet="0x90f79bf6eb2c4f870365e785982e1f101e93b906".lower(),
-        reporter_name="Alex Martinez (Ground Volunteer)",
+        reporter_name="Sujal Das (Ground Volunteer)",
         reporter_contact="+91 98270-11223",
         status="Under Review",
         investigator_notes="High spatial correlation with Case FG-2026-0901. Hospital gate CCTV requested.",

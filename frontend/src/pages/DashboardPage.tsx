@@ -210,7 +210,7 @@ export const DashboardPage: React.FC = () => {
             </span>
           </div>
           <p className="text-xs text-slate-400">
-            Authenticated Officer: <span className="text-slate-200 font-semibold">{user?.full_name || 'Anonymous User'}</span> ({formatAddress(walletAddress || '', 4)}) • <span className="text-cyan-400 font-mono">Bhilai Incident Command Sector</span>
+            {role === 'volunteer' ? 'Active Volunteer Responder' : 'Authenticated Officer'}: <span className="text-slate-200 font-semibold">{role === 'volunteer' ? 'Sujal Das' : (user?.full_name || 'Sujal Das')}</span> ({formatAddress(walletAddress || '', 4)}) • <span className="text-cyan-400 font-mono">Bhilai Incident Command Sector</span>
           </p>
         </div>
 
@@ -576,7 +576,7 @@ export const DashboardPage: React.FC = () => {
           <div className="text-2xl font-black text-purple-400 font-mono">
             {analytics?.tasks_in_progress ?? 3}
           </div>
-          <span className="text-[10px] text-purple-400 font-mono mt-1 block">Active sector sweeps</span>
+          <span className="text-[10px] text-purple-400 font-mono mt-1 block">Lead: Sujal Das (Volunteer Grid)</span>
         </div>
 
         <div className="p-4 rounded-2xl bg-navy-900 border border-navy-800">

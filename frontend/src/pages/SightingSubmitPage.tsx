@@ -314,7 +314,7 @@ export const SightingSubmitPage: React.FC = () => {
                   <label className="block text-xs font-medium text-slate-300 mb-1">Your Name / Handle</label>
                   <input
                     type="text"
-                    placeholder="e.g. Alex Martinez"
+                    placeholder="e.g. Sujal Das"
                     value={formData.reporter_name}
                     onChange={(e) => setFormData({ ...formData, reporter_name: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-navy-950 border border-navy-800 text-xs text-white focus:outline-none focus:border-cyan-500"
