@@ -565,7 +565,7 @@ export const LoginPage: React.FC = () => {
                 <span className="text-xs font-bold text-white group-hover:text-emerald-300">Citizen / Vol.</span>
                 <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-950 text-emerald-400 rounded">Citizen</span>
               </div>
-              <span className="text-[10px] text-slate-400 block truncate">Sarah Jenkins</span>
+              <span className="text-[10px] text-slate-400 block truncate">Sujal Das</span>
               <span className="text-[10px] text-slate-500 font-mono block">citizen@findgrid...</span>
             </button>
 

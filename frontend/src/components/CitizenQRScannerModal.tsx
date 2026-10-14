@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 
 interface CitizenDetails {
   fullName: string;
+  fathersName: string;
+  gender: string;
   citizenId: string;
   email: string;
   phone: string;
@@ -30,18 +32,20 @@ interface CitizenQRScannerModalProps {
 }
 
 const SAMPLE_CITIZEN: CitizenDetails = {
-  fullName: 'Sarah Jenkins',
-  citizenId: 'CIT-94021-USA',
-  email: 'citizen@findgrid.org',
-  phone: '+1 (555) 749-0129',
+  fullName: 'Sujal Das',
+  fathersName: 'Tapan Kumar Das',
+  gender: 'Male',
+  citizenId: 'CIT-IND-2026-88129',
+  email: 'sujal.das@findgrid.org',
+  phone: '+91 98302 44192',
   role: 'volunteer',
-  organization: 'FindGrid Community Search Alliance',
-  bloodGroup: 'O+',
-  emergencyContact: 'David Jenkins (+1 555-749-0130)',
-  jurisdiction: 'Metro Search Command — Sector 4',
-  walletAddress: '0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f',
+  organization: 'FindGrid Search & Emergency Rescue Network',
+  bloodGroup: 'B+',
+  emergencyContact: 'Tapan Kumar Das (Father) - +91 98301 77210',
+  jurisdiction: 'Eastern Sector Command — Zone 3',
+  walletAddress: '0x4b7f8e12a67e456d98124d65f7fbc0abf5b21e8f',
   verifiedAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-  faceMatchScore: 98.7,
+  faceMatchScore: 99.4,
 };
 
 export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
@@ -178,25 +182,28 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
     try {
       const parsed = JSON.parse(dataString);
       const citizen: CitizenDetails = {
-        fullName: parsed.name || parsed.fullName || 'Sarah Jenkins',
-        citizenId: parsed.id || parsed.citizenId || 'CIT-94021-USA',
-        email: parsed.email || 'citizen@findgrid.org',
-        phone: parsed.phone || '+1 (555) 749-0129',
+        fullName: parsed.name || parsed.fullName || 'Sujal Das',
+        fathersName: parsed.fathersName || parsed.fatherName || parsed.father_name || 'Tapan Kumar Das',
+        gender: parsed.gender || 'Male',
+        citizenId: parsed.id || parsed.citizenId || 'CIT-IND-2026-88129',
+        email: parsed.email || 'sujal.das@findgrid.org',
+        phone: parsed.phone || '+91 98302 44192',
         role: parsed.role || 'volunteer',
-        organization: parsed.organization || 'FindGrid Community Search Alliance',
-        bloodGroup: parsed.bloodGroup || 'O+',
-        emergencyContact: parsed.emergencyContact || 'Emergency Contact On File',
-        jurisdiction: parsed.jurisdiction || 'Metro Emergency Area',
-        walletAddress: parsed.walletAddress || '0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f',
+        organization: parsed.organization || 'FindGrid Search & Emergency Rescue Network',
+        bloodGroup: parsed.bloodGroup || parsed.blood_group || 'B+',
+        emergencyContact: parsed.emergencyContact || parsed.emergency_contact || 'Tapan Kumar Das (Father) - +91 98301 77210',
+        jurisdiction: parsed.jurisdiction || 'Eastern Sector Command — Zone 3',
+        walletAddress: parsed.walletAddress || '0x4b7f8e12a67e456d98124d65f7fbc0abf5b21e8f',
         verifiedAt: new Date().toLocaleDateString(),
+        faceMatchScore: 99.4,
       };
       setScannedCitizen(citizen);
       setActiveStep('face'); // Move to step 2: Face Verification
     } catch {
-      // If raw text or ID string, build citizen profile
+      // If raw text or non-JSON QR is scanned, load Sujal Das identity
       const citizen: CitizenDetails = {
         ...SAMPLE_CITIZEN,
-        citizenId: dataString.substring(0, 24) || SAMPLE_CITIZEN.citizenId,
+        citizenId: dataString.length > 5 && dataString.length < 32 ? dataString : SAMPLE_CITIZEN.citizenId,
       };
       setScannedCitizen(citizen);
       setActiveStep('face');
@@ -377,7 +384,7 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
                   className="py-2.5 px-3 rounded-xl bg-cyan-950/80 hover:bg-cyan-900/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Load Sample Citizen QR</span>
+                  <span>Load Citizen QR (Sujal Das)</span>
                 </button>
               </div>
 
@@ -391,8 +398,18 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
           {/* STEP 2: FACE VERIFICATION CAMERA */}
           {activeStep === 'face' && (
             <div className="space-y-4">
-              <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200 flex items-center justify-between">
-                <span className="font-medium">QR Scanned: {scannedCitizen?.fullName} ({scannedCitizen?.citizenId})</span>
+              <div className="p-3 rounded-xl bg-cyan-950/50 border border-cyan-500/40 text-xs text-cyan-200 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white text-sm">Citizen: {scannedCitizen?.fullName}</span>
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-cyan-900/80 text-cyan-300 border border-cyan-500/30">
+                      {scannedCitizen?.gender}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-300 font-mono block mt-0.5">
+                    Father's Name: <span className="text-cyan-300 font-semibold">{scannedCitizen?.fathersName}</span> • ID: {scannedCitizen?.citizenId}
+                  </span>
+                </div>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40">Step 2 / 2</span>
               </div>
 
@@ -420,6 +437,7 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
                     LIVENESS MONITOR ACTIVE
                   </div>
                   <div>Mesh Points: 68 Aligned</div>
+                  <div>Citizen: {scannedCitizen?.fullName}</div>
                   <div>Exposure / Anti-Spoof: OK</div>
                 </div>
               </div>
@@ -449,7 +467,9 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
                   </div>
                   <div>
                     <span className="font-bold block text-white">Biometric Face & QR Match Confirmed</span>
-                    <span className="text-[11px] text-emerald-400">Confidence: {faceMatchResult?.confidence ?? 98.7}% • Liveness Verified</span>
+                    <span className="text-[11px] text-emerald-400">
+                      Subject: {scannedCitizen.fullName} • Confidence: {faceMatchResult?.confidence ?? 99.4}% • Liveness Verified
+                    </span>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded bg-emerald-900 text-emerald-200 font-mono text-[10px] font-bold">
@@ -463,16 +483,24 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
                 <div className="flex items-start justify-between pb-4 border-b border-navy-800">
                   <div className="flex items-center gap-3">
                     {/* Face Snapshot Thumbnail */}
-                    <div className="w-14 h-14 rounded-xl bg-navy-900 border border-cyan-500/40 overflow-hidden flex items-center justify-center text-cyan-400 shrink-0">
+                    <div className="w-16 h-16 rounded-xl bg-navy-900 border-2 border-emerald-500/40 overflow-hidden flex items-center justify-center text-cyan-400 shrink-0 relative">
                       {faceCapturedImage ? (
                         <img src={faceCapturedImage} alt="Face Snapshot" className="w-full h-full object-cover scale-x-[-1]" />
                       ) : (
-                        <User className="w-7 h-7" />
+                        <User className="w-8 h-8" />
                       )}
+                      <div className="absolute bottom-0 inset-x-0 bg-emerald-950/90 py-0.2 text-[8px] font-mono text-emerald-300 text-center font-bold">
+                        MATCHED
+                      </div>
                     </div>
                     <div>
-                      <h4 className="text-base font-bold text-white">{scannedCitizen.fullName}</h4>
-                      <p className="text-xs text-cyan-300 font-mono">{scannedCitizen.citizenId}</p>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-base font-bold text-white tracking-wide">{scannedCitizen.fullName}</h4>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+                          {scannedCitizen.gender}
+                        </span>
+                      </div>
+                      <p className="text-xs text-cyan-300 font-mono mt-0.5">{scannedCitizen.citizenId}</p>
                       <p className="text-[11px] text-slate-400">{scannedCitizen.organization}</p>
                     </div>
                   </div>
@@ -484,22 +512,45 @@ export const CitizenQRScannerModal: React.FC<CitizenQRScannerModalProps> = ({
 
                 {/* Detailed Attributes Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  
+                  {/* Full Name */}
                   <div className="p-2.5 rounded-lg bg-navy-900/60 border border-navy-850">
-                    <span className="text-[10px] text-slate-500 font-mono block">EMAIL ADDRESS</span>
-                    <span className="text-slate-200 font-mono truncate block">{scannedCitizen.email}</span>
+                    <span className="text-[10px] text-slate-500 font-mono block">CITIZEN FULL NAME</span>
+                    <span className="text-white font-semibold block">{scannedCitizen.fullName}</span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-navy-900/60 border border-navy-850">
-                    <span className="text-[10px] text-slate-500 font-mono block">PRIMARY PHONE</span>
-                    <span className="text-slate-200 font-mono truncate block">{scannedCitizen.phone}</span>
+                  {/* Father's Name */}
+                  <div className="p-2.5 rounded-lg bg-cyan-950/20 border border-cyan-500/30">
+                    <span className="text-[10px] text-cyan-400 font-mono block font-semibold">FATHER'S NAME</span>
+                    <span className="text-cyan-200 font-bold block">{scannedCitizen.fathersName}</span>
                   </div>
 
+                  {/* Gender */}
+                  <div className="p-2.5 rounded-lg bg-navy-900/60 border border-navy-850">
+                    <span className="text-[10px] text-slate-500 font-mono block">GENDER</span>
+                    <span className="text-slate-200 font-semibold block">{scannedCitizen.gender}</span>
+                  </div>
+
+                  {/* Emergency Contact */}
                   <div className="p-2.5 rounded-lg bg-navy-900/60 border border-navy-850">
                     <span className="text-[10px] text-slate-500 font-mono block">EMERGENCY CONTACT</span>
                     <span className="text-slate-200 font-mono truncate block">{scannedCitizen.emergencyContact}</span>
                   </div>
 
+                  {/* Email */}
                   <div className="p-2.5 rounded-lg bg-navy-900/60 border border-navy-850">
+                    <span className="text-[10px] text-slate-500 font-mono block">EMAIL ADDRESS</span>
+                    <span className="text-slate-200 font-mono truncate block">{scannedCitizen.email}</span>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="p-2.5 rounded-lg bg-navy-900/60 border border-navy-850">
+                    <span className="text-[10px] text-slate-500 font-mono block">PRIMARY PHONE</span>
+                    <span className="text-slate-200 font-mono truncate block">{scannedCitizen.phone}</span>
+                  </div>
+
+                  {/* Jurisdiction */}
+                  <div className="p-2.5 rounded-lg bg-navy-900/60 border border-navy-850 sm:col-span-2">
                     <span className="text-[10px] text-slate-500 font-mono block">JURISDICTION / SECTOR</span>
                     <span className="text-slate-200 truncate block">{scannedCitizen.jurisdiction}</span>
                   </div>

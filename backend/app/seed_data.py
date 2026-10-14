@@ -65,10 +65,10 @@ def seed_database(db: Session):
         ),
         Profile(
             wallet_address="0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f".lower(),
-            full_name="Sarah Jenkins",
+            full_name="Sujal Das",
             email="citizen@findgrid.org",
-            organization="Neighborhood Community Responder",
-            badge_number="CIT-109",
+            organization="FindGrid Search & Emergency Rescue Network",
+            badge_number="CIT-IND-88129",
             role="volunteer",
             password_hash=default_pw_hash,
             is_active=True
